@@ -1,0 +1,29 @@
+{
+  "name": "matriwatch",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AI-powered maternal health monitoring platform for mothers and clinics.",
+  "workspaces": [
+    "apps/web",
+    "apps/mobile",
+    "packages/shared"
+  ],
+  "scripts": {
+    "dev:web": "npm --workspace apps/web run dev",
+    "dev:mobile": "npm --workspace apps/mobile run start",
+    "dev:ml": "python -m uvicorn app.main:app --reload --app-dir services/ml",
+    "build:web": "npm --workspace apps/web run build",
+    "typecheck": "npm --workspace packages/shared run typecheck && npm --workspace apps/web run typecheck && npm --workspace apps/mobile run typecheck",
+    "download:datasets": "python scripts/download_datasets.py",
+    "train:models": "python scripts/train_all_models.py",
+    "ml:test": "python -m pytest services/ml/tests"
+  },
+  "devDependencies": {
+    "@types/react": "~19.1.10",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-native": "0.81.5",
+    "react-native-worklets": "^0.8.3",
+    "typescript": "^5.4.5"
+  }
+}

@@ -1,0 +1,415 @@
+-- ============================================
+-- MatriWatch — Supabase SQL Migration
+-- Run this in Supabase SQL Editor
+-- ============================================
+
+
+-- ============================================
+-- ENUMS
+-- ============================================
+
+create type user_role as enum ('mother', 'clinic_staff', 'admin');
+create type risk_level as enum ('low', 'mid', 'high');
+
+
+-- ============================================
+-- TABLES
+-- ============================================
+
+-- Users
+create table users (
+  id uuid primary key default gen_random_uuid(),
+  email text unique not null,
+  role user_role not null default 'mother',
+  created_at timestamptz default now()
+);
+
+-- Clinics
+create table clinics (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  location text,
+  contact text,
+  created_at timestamptz default now()
+);
+
+-- Mothers
+create table mothers (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references users(id) on delete cascade,
+  name text not null,
+  age int not null,
+  gestational_age int,
+  clinic_id uuid references clinics(id) on delete set null,
+  due_date date,
+  created_at timestamptz default now()
+);
+
+-- Staff
+create table staff (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references users(id) on delete cascade,
+  clinic_id uuid references clinics(id) on delete set null,
+  name text not null,
+  role text,
+  created_at timestamptz default now()
+);
+
+-- Check-ins
+create table checkins (
+  id uuid primary key default gen_random_uuid(),
+  mother_id uuid references mothers(id) on delete cascade,
+  bp_systolic int,
+  bp_diastolic int,
+  blood_sugar float,
+  body_temp float,
+  heart_rate int,
+  symptoms text[],
+  notes text,
+  risk_score float,
+  risk_level risk_level,
+  created_at timestamptz default now()
+);
+
+-- EPDS Responses
+create table epds_responses (
+  id uuid primary key default gen_random_uuid(),
+  mother_id uuid references mothers(id) on delete cascade,
+  responses jsonb not null,
+  total_score int not null,
+  ppd_flagged boolean default false,
+  created_at timestamptz default now()
+);
+
+-- Alerts
+create table alerts (
+  id uuid primary key default gen_random_uuid(),
+  mother_id uuid references mothers(id) on delete cascade,
+  clinic_id uuid references clinics(id) on delete cascade,
+  alert_type text not null,
+  message text not null,
+  is_read boolean default false,
+  created_at timestamptz default now()
+);
+
+
+-- ============================================
+-- INDEXES
+-- ============================================
+
+create index idx_mothers_clinic_id on mothers(clinic_id);
+create index idx_mothers_user_id on mothers(user_id);
+create index idx_checkins_mother_id on checkins(mother_id);
+create index idx_checkins_created_at on checkins(created_at desc);
+create index idx_alerts_clinic_id on alerts(clinic_id);
+create index idx_alerts_is_read on alerts(is_read);
+create index idx_epds_mother_id on epds_responses(mother_id);
+create index idx_staff_clinic_id on staff(clinic_id);
+create index idx_staff_user_id on staff(user_id);
+
+
+-- ============================================
+-- ROW LEVEL SECURITY
+-- ============================================
+
+alter table users enable row level security;
+alter table clinics enable row level security;
+alter table mothers enable row level security;
+alter table staff enable row level security;
+alter table checkins enable row level security;
+alter table epds_responses enable row level security;
+alter table alerts enable row level security;
+
+
+-- ============================================
+-- RLS POLICIES — USERS
+-- ============================================
+
+-- Users can read their own row
+create policy "users_select_own"
+  on users for select
+  using (auth.uid() = id);
+
+-- Users can update their own row
+create policy "users_update_own"
+  on users for update
+  using (auth.uid() = id);
+
+
+-- ============================================
+-- RLS POLICIES — CLINICS
+-- ============================================
+
+-- Anyone authenticated can read clinics
+create policy "clinics_select_authenticated"
+  on clinics for select
+  using (auth.role() = 'authenticated');
+
+-- Only admins can insert/update clinics
+create policy "clinics_insert_admin"
+  on clinics for insert
+  with check (
+    exists (
+      select 1 from users
+      where id = auth.uid() and role = 'admin'
+    )
+  );
+
+
+-- ============================================
+-- RLS POLICIES — MOTHERS
+-- ============================================
+
+-- Mothers can read their own record
+create policy "mothers_select_own"
+  on mothers for select
+  using (user_id = auth.uid());
+
+-- Clinic staff can read mothers assigned to their clinic
+create policy "mothers_select_clinic_staff"
+  on mothers for select
+  using (
+    exists (
+      select 1 from staff
+      where staff.user_id = auth.uid()
+      and staff.clinic_id = mothers.clinic_id
+    )
+  );
+
+-- Mothers can update their own record
+create policy "mothers_update_own"
+  on mothers for update
+  using (user_id = auth.uid());
+
+-- Mothers can insert their own record
+create policy "mothers_insert_own"
+  on mothers for insert
+  with check (user_id = auth.uid());
+
+
+-- ============================================
+-- RLS POLICIES — STAFF
+-- ============================================
+
+-- Staff can read their own record
+create policy "staff_select_own"
+  on staff for select
+  using (user_id = auth.uid());
+
+-- Staff can read other staff in the same clinic
+create policy "staff_select_same_clinic"
+  on staff for select
+  using (
+    clinic_id in (
+      select clinic_id from staff where user_id = auth.uid()
+    )
+  );
+
+
+-- ============================================
+-- RLS POLICIES — CHECKINS
+-- ============================================
+
+-- Mothers can read their own check-ins
+create policy "checkins_select_own_mother"
+  on checkins for select
+  using (
+    exists (
+      select 1 from mothers
+      where mothers.id = checkins.mother_id
+      and mothers.user_id = auth.uid()
+    )
+  );
+
+-- Mothers can insert their own check-ins
+create policy "checkins_insert_own_mother"
+  on checkins for insert
+  with check (
+    exists (
+      select 1 from mothers
+      where mothers.id = checkins.mother_id
+      and mothers.user_id = auth.uid()
+    )
+  );
+
+-- Clinic staff can read check-ins for their clinic's mothers
+create policy "checkins_select_clinic_staff"
+  on checkins for select
+  using (
+    exists (
+      select 1 from mothers
+      join staff on staff.clinic_id = mothers.clinic_id
+      where mothers.id = checkins.mother_id
+      and staff.user_id = auth.uid()
+    )
+  );
+
+-- Service role can update check-ins (for risk score writing)
+create policy "checkins_update_service_role"
+  on checkins for update
+  using (auth.role() = 'service_role');
+
+
+-- ============================================
+-- RLS POLICIES — EPDS RESPONSES
+-- ============================================
+
+-- Mothers can read their own EPDS responses
+create policy "epds_select_own_mother"
+  on epds_responses for select
+  using (
+    exists (
+      select 1 from mothers
+      where mothers.id = epds_responses.mother_id
+      and mothers.user_id = auth.uid()
+    )
+  );
+
+-- Mothers can insert their own EPDS responses
+create policy "epds_insert_own_mother"
+  on epds_responses for insert
+  with check (
+    exists (
+      select 1 from mothers
+      where mothers.id = epds_responses.mother_id
+      and mothers.user_id = auth.uid()
+    )
+  );
+
+-- Clinic staff can read EPDS responses for their clinic's mothers
+create policy "epds_select_clinic_staff"
+  on epds_responses for select
+  using (
+    exists (
+      select 1 from mothers
+      join staff on staff.clinic_id = mothers.clinic_id
+      where mothers.id = epds_responses.mother_id
+      and staff.user_id = auth.uid()
+    )
+  );
+
+
+-- ============================================
+-- RLS POLICIES — ALERTS
+-- ============================================
+
+-- Clinic staff can read alerts for their clinic
+create policy "alerts_select_clinic_staff"
+  on alerts for select
+  using (
+    exists (
+      select 1 from staff
+      where staff.user_id = auth.uid()
+      and staff.clinic_id = alerts.clinic_id
+    )
+  );
+
+-- Clinic staff can update alerts (mark as read)
+create policy "alerts_update_clinic_staff"
+  on alerts for update
+  using (
+    exists (
+      select 1 from staff
+      where staff.user_id = auth.uid()
+      and staff.clinic_id = alerts.clinic_id
+    )
+  );
+
+-- Service role can insert alerts (triggered by edge function)
+create policy "alerts_insert_service_role"
+  on alerts for insert
+  with check (auth.role() = 'service_role');
+
+
+-- ============================================
+-- SEED DATA
+-- ============================================
+
+-- Clinics
+insert into clinics (id, name, location, contact) values
+  ('a1000000-0000-0000-0000-000000000001', 'Dhaka Mother & Child Clinic', 'Mirpur, Dhaka', '+880 1711 000001'),
+  ('a1000000-0000-0000-0000-000000000002', 'Uttara Women Health Center', 'Uttara, Dhaka', '+880 1711 000002');
+
+-- Users (mothers)
+insert into users (id, email, role) values
+  ('b1000000-0000-0000-0000-000000000001', 'fatima@example.com', 'mother'),
+  ('b1000000-0000-0000-0000-000000000002', 'nasrin@example.com', 'mother'),
+  ('b1000000-0000-0000-0000-000000000003', 'sumaiya@example.com', 'mother'),
+  ('b1000000-0000-0000-0000-000000000004', 'roksana@example.com', 'mother'),
+  ('b1000000-0000-0000-0000-000000000005', 'bristy@example.com', 'mother');
+
+-- Users (staff)
+insert into users (id, email, role) values
+  ('b1000000-0000-0000-0000-000000000006', 'dr.rahman@clinic1.com', 'clinic_staff'),
+  ('b1000000-0000-0000-0000-000000000007', 'nurse.haque@clinic2.com', 'clinic_staff');
+
+-- Mothers
+insert into mothers (id, user_id, name, age, gestational_age, clinic_id, due_date) values
+  ('c1000000-0000-0000-0000-000000000001', 'b1000000-0000-0000-0000-000000000001', 'Fatima Begum',    24, 28, 'a1000000-0000-0000-0000-000000000001', current_date + interval '84 days'),
+  ('c1000000-0000-0000-0000-000000000002', 'b1000000-0000-0000-0000-000000000002', 'Nasrin Akter',    29, 34, 'a1000000-0000-0000-0000-000000000001', current_date + interval '42 days'),
+  ('c1000000-0000-0000-0000-000000000003', 'b1000000-0000-0000-0000-000000000003', 'Sumaiya Khanam',  22, 12, 'a1000000-0000-0000-0000-000000000002', current_date + interval '196 days'),
+  ('c1000000-0000-0000-0000-000000000004', 'b1000000-0000-0000-0000-000000000004', 'Roksana Islam',   31, 38, 'a1000000-0000-0000-0000-000000000002', current_date + interval '14 days'),
+  ('c1000000-0000-0000-0000-000000000005', 'b1000000-0000-0000-0000-000000000005', 'Bristy Rahman',   26, 20, 'a1000000-0000-0000-0000-000000000001', current_date + interval '140 days');
+
+-- Staff
+insert into staff (id, user_id, clinic_id, name, role) values
+  ('d1000000-0000-0000-0000-000000000001', 'b1000000-0000-0000-0000-000000000006', 'a1000000-0000-0000-0000-000000000001', 'Dr. Karim Rahman', 'Doctor'),
+  ('d1000000-0000-0000-0000-000000000002', 'b1000000-0000-0000-0000-000000000007', 'a1000000-0000-0000-0000-000000000002', 'Nurse Sadia Haque', 'Nurse');
+
+-- Check-ins (20 entries, mixed risk, last 7 days)
+insert into checkins (mother_id, bp_systolic, bp_diastolic, blood_sugar, body_temp, heart_rate, symptoms, notes, risk_score, risk_level, created_at) values
+  ('c1000000-0000-0000-0000-000000000001', 118, 76, 5.2, 36.6, 80, '{}',                          'Feeling well today',         0.1, 'low',  now() - interval '0 days'),
+  ('c1000000-0000-0000-0000-000000000001', 125, 82, 6.1, 36.8, 84, '{"headache"}',                'Mild headache in morning',   0.4, 'mid',  now() - interval '1 days'),
+  ('c1000000-0000-0000-0000-000000000001', 145, 95, 7.4, 37.1, 92, '{"headache","dizziness"}',    'Feeling dizzy and tired',    0.9, 'high', now() - interval '2 days'),
+  ('c1000000-0000-0000-0000-000000000002', 120, 78, 5.5, 36.5, 78, '{}',                          'Normal day',                 0.1, 'low',  now() - interval '0 days'),
+  ('c1000000-0000-0000-0000-000000000002', 132, 88, 8.2, 37.0, 88, '{"swelling"}',                'Swelling in feet',           0.6, 'mid',  now() - interval '1 days'),
+  ('c1000000-0000-0000-0000-000000000002', 148, 96, 11.5, 38.7, 98, '{"swelling","fever"}',       'High fever and swelling',    0.95,'high', now() - interval '3 days'),
+  ('c1000000-0000-0000-0000-000000000003', 110, 70, 4.8, 36.4, 74, '{}',                          'All good',                   0.05,'low',  now() - interval '0 days'),
+  ('c1000000-0000-0000-0000-000000000003', 115, 74, 5.0, 36.5, 76, '{}',                          'Normal',                     0.1, 'low',  now() - interval '2 days'),
+  ('c1000000-0000-0000-0000-000000000003', 118, 76, 5.3, 36.6, 79, '{"nausea"}',                  'Morning sickness',           0.2, 'low',  now() - interval '4 days'),
+  ('c1000000-0000-0000-0000-000000000004', 138, 90, 9.1, 37.5, 94, '{"swelling","blurred vision"}','Vision a bit blurry',       0.8, 'high', now() - interval '0 days'),
+  ('c1000000-0000-0000-0000-000000000004', 135, 88, 8.8, 37.3, 91, '{"swelling"}',                'Swelling continues',         0.65,'mid',  now() - interval '1 days'),
+  ('c1000000-0000-0000-0000-000000000004', 142, 93, 10.2, 38.0, 96, '{"swelling","chest pain"}',  'Chest feels tight',          0.9, 'high', now() - interval '2 days'),
+  ('c1000000-0000-0000-0000-000000000005', 116, 74, 5.1, 36.5, 77, '{}',                          'Feeling good',               0.1, 'low',  now() - interval '0 days'),
+  ('c1000000-0000-0000-0000-000000000005', 119, 77, 5.4, 36.7, 80, '{"nausea"}',                  'Slight nausea',              0.15,'low',  now() - interval '1 days'),
+  ('c1000000-0000-0000-0000-000000000005', 122, 80, 6.0, 36.8, 83, '{"headache"}',                'Headache after lunch',       0.3, 'low',  now() - interval '3 days'),
+  ('c1000000-0000-0000-0000-000000000001', 120, 78, 5.6, 36.6, 81, '{}',                          'Better today',               0.1, 'low',  now() - interval '4 days'),
+  ('c1000000-0000-0000-0000-000000000002', 128, 84, 7.0, 36.9, 86, '{"headache"}',                'Headache persists',          0.5, 'mid',  now() - interval '5 days'),
+  ('c1000000-0000-0000-0000-000000000003', 112, 72, 4.9, 36.4, 75, '{}',                          'Feeling fine',               0.08,'low',  now() - interval '5 days'),
+  ('c1000000-0000-0000-0000-000000000004', 140, 91, 9.5, 37.8, 95, '{"bleeding"}',                'Light spotting noticed',     0.88,'high', now() - interval '6 days'),
+  ('c1000000-0000-0000-0000-000000000005', 117, 75, 5.2, 36.5, 78, '{}',                          'Normal check-in',            0.1, 'low',  now() - interval '6 days');
+
+-- EPDS Responses
+insert into epds_responses (mother_id, responses, total_score, ppd_flagged, created_at) values
+  ('c1000000-0000-0000-0000-000000000001',
+   '{"q1":1,"q2":0,"q3":1,"q4":1,"q5":0,"q6":1,"q7":0,"q8":1,"q9":0,"q10":1}',
+   6, false, now() - interval '3 days'),
+  ('c1000000-0000-0000-0000-000000000002',
+   '{"q1":2,"q2":2,"q3":2,"q4":2,"q5":1,"q6":2,"q7":1,"q8":2,"q9":1,"q10":2}',
+   17, true, now() - interval '2 days'),
+  ('c1000000-0000-0000-0000-000000000004',
+   '{"q1":2,"q2":2,"q3":3,"q4":2,"q5":2,"q6":2,"q7":2,"q8":2,"q9":1,"q10":2}',
+   20, true, now() - interval '1 days');
+
+-- Alerts
+insert into alerts (mother_id, clinic_id, alert_type, message, is_read, created_at) values
+  ('c1000000-0000-0000-0000-000000000001', 'a1000000-0000-0000-0000-000000000001',
+   'high_risk_vitals',
+   'Fatima Begum has been flagged High Risk. BP systolic 145, BP diastolic 95. Immediate follow-up recommended.',
+   false, now() - interval '2 days'),
+  ('c1000000-0000-0000-0000-000000000002', 'a1000000-0000-0000-0000-000000000001',
+   'high_risk_vitals',
+   'Nasrin Akter has been flagged High Risk. Blood sugar 11.5, body temp 38.7. Immediate follow-up recommended.',
+   false, now() - interval '3 days'),
+  ('c1000000-0000-0000-0000-000000000002', 'a1000000-0000-0000-0000-000000000001',
+   'ppd_flag',
+   'Nasrin Akter scored 17 on the EPDS screening. Postpartum depression follow-up required.',
+   false, now() - interval '2 days'),
+  ('c1000000-0000-0000-0000-000000000004', 'a1000000-0000-0000-0000-000000000002',
+   'high_risk_vitals',
+   'Roksana Islam has been flagged High Risk. BP systolic 142, chest pain reported. Immediate follow-up recommended.',
+   false, now() - interval '2 days'),
+  ('c1000000-0000-0000-0000-000000000004', 'a1000000-0000-0000-0000-000000000002',
+   'ppd_flag',
+   'Roksana Islam scored 20 on the EPDS screening. Urgent mental health follow-up required.',
+   true, now() - interval '1 days');

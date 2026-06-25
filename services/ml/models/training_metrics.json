@@ -1,0 +1,52 @@
+[
+  {
+    "artifact": "maternal_risk_classifier.joblib",
+    "accuracy": 0.9161,
+    "weighted_f1": 0.9164,
+    "rows_tested": 441
+  },
+  {
+    "artifact": "birth_weight_logistic_regression.joblib",
+    "accuracy": 0.925,
+    "weighted_f1": 0.9266,
+    "rows_tested": 40
+  },
+  {
+    "artifact": "pregnancy_high_risk_random_forest.joblib",
+    "accuracy": 0.935,
+    "weighted_f1": 0.934,
+    "rows_tested": 200
+  },
+  {
+    "artifact": "fetal_health_random_forest.joblib",
+    "accuracy": 0.9319,
+    "weighted_f1": 0.9288,
+    "rows_tested": 426
+  },
+  {
+    "artifact": "postpartum_depression_random_forest.joblib",
+    "accuracy": 0.9701,
+    "weighted_f1": 0.97,
+    "rows_tested": 301
+  },
+  {
+    "artifact": "gdm_ensemble_gradient_boosting.joblib",
+    "accuracy": 0.9427,
+    "weighted_f1": 0.9428,
+    "rows_tested": 908
+  },
+  {
+    "artifact": "symptom_severity_tfidf_logreg.joblib",
+    "accuracy": 1.0,
+    "weighted_f1": 1.0,
+    "rows_tested": 200,
+    "label_source": "clinical_derived_from_symptoms_and_condition",
+    "raw_dataset_severity_note": "The original Dataset 9 Severity column is not learnable from the provided features; the production target is derived from symptom and condition danger signs."
+  },
+  {
+    "artifact": "symptom_disease_tfidf_logreg.joblib",
+    "accuracy": 0.9542,
+    "weighted_f1": 0.9544,
+    "rows_tested": 240
+  }
+]

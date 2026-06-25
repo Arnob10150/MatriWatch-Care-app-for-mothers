@@ -1,0 +1,167 @@
+Here are the motherly colors first, then the full prompt:
+
+---
+
+**Motherly color palette:**
+- Blush pink — #F9B8C4 (primary warmth)
+- Dusty rose — #C97C8A (accents, active states)
+- Warm cream — #FFF8F0 (background)
+- Soft lavender — #D8C4E8 (secondary, EPDS/mental health sections)
+- Sage green — #87A878 (low risk, safe, calm)
+- Peach — #FFD4A8 (cards, highlights)
+- Warm white — #FFFFFF (surfaces)
+- Soft charcoal — #2D2D2D (primary text)
+- Medium gray — #7A7A8A (secondary text)
+- Border — #EDE8E3
+
+Risk colors stay readable but warm:
+- Low risk: sage green #87A878 on #F0F7ED background
+- Mid risk: warm amber #D4914A on #FDF3E7 background
+- High risk: deep rose #C94F6D on #FCE8EE background
+
+---
+
+Now the full Replit prompt with these colors applied:
+
+---
+
+Build a full-stack maternal health monitoring platform called **MatriWatch** with two sides: a React Native mobile app for mothers and a Next.js web dashboard for clinics.
+
+**Project structure:**
+Create a monorepo with two folders — /apps/mobile (React Native + Expo) and /apps/web (Next.js 14 App Router). Use TypeScript throughout. Shared types go in /packages/types.
+
+---
+
+**Design system and visual identity:**
+
+Overall feel: warm, nurturing, and trustworthy. This is a platform used by pregnant mothers and postpartum women in Bangladesh. It should feel like a caring companion, not a cold medical tool. Think soft, calm, and human — like holding someone's hand through a difficult journey. Inspired by the warmth of motherhood itself.
+
+Color palette:
+- Primary: blush pink — #F9B8C4
+- Primary dark (buttons, active): dusty rose — #C97C8A
+- Background: warm cream — #FFF8F0
+- Surface/cards: warm white — #FFFFFF
+- Accent: soft lavender — #D8C4E8 (used for mental health and EPDS sections)
+- Highlight: peach — #FFD4A8 (used for card highlights and secondary actions)
+- Text primary: soft charcoal — #2D2D2D
+- Text secondary: medium gray — #7A7A8A
+- Border: #EDE8E3
+- Low risk: #87A878 text on #F0F7ED background
+- Mid risk: #D4914A text on #FDF3E7 background
+- High risk: #C94F6D text on #FCE8EE background
+
+Typography: use Inter font throughout. Headings 24px bold, section titles 18px semibold, body 14px regular, labels 12px medium, patient names 16px semibold. Line height 1.6 throughout for readability.
+
+Component style rules:
+- Border radius: rounded-2xl for cards, rounded-xl for buttons and inputs, rounded-full for badges
+- Shadows: shadow-sm with a warm tint (box-shadow: 0 1px 4px rgba(201,124,138,0.08)) for cards, shadow-md for modals
+- All buttons use dusty rose #C97C8A as background with white text, hover darkens to #B06678
+- Primary action buttons are full width on mobile
+- Risk badges are pill shaped with a small colored dot on the left and soft colored background
+- Alert cards have a deep rose left border (3px solid #C94F6D) and light rose background
+- Empty states show a soft illustration placeholder with a short encouraging message in gray
+- Loading states use Skeleton in warm cream pulse (#FFF0E8)
+- All form inputs have a blush pink focus ring
+- Section dividers use #EDE8E3
+
+shadcn/ui components to use: Card, Badge, Button, Input, Select, Table, Dialog, Sheet, Tabs, Avatar, Separator, Skeleton, Toast.
+
+---
+
+**Web dashboard (Next.js + shadcn/ui):**
+
+Pages:
+- /login — centered card on warm cream background, MatriWatch logo at top in dusty rose, tagline "Caring for every mother, every day" in gray, email and password inputs with blush pink focus ring, dusty rose sign in button
+- /dashboard — main patient overview
+- /patients/[id] — individual patient detail
+- /alerts — real-time alert feed
+
+Layout: fixed left sidebar 240px wide. Sidebar background is dusty rose #C97C8A with white text and icons. Logo at the top of sidebar in white. Sidebar nav items: Dashboard, Patients, Alerts, Reports, Settings. Active item has a white background with dusty rose text. Sidebar bottom shows logged-in staff name and avatar. Main content area background is warm cream #FFF8F0 with 24px padding. Top bar is white with a bottom border in #EDE8E3, shows page title on left and notification bell plus staff avatar on right.
+
+Dashboard page: stats row at the top with 4 cards — Total Patients (blush pink icon), High Risk (deep rose icon), Alerts Today (peach icon), Check-ins Today (sage green icon). Each stat card is white with rounded-2xl and a soft warm shadow. Below the stats show the full patient table. Table header row has a warm cream background. Columns: Name, Age, Risk Level (pill badge), Last Check-in (relative time), Gestational Age (weeks), View button. High risk rows have a 3px solid #C94F6D left border. Table rows have a warm hover background (#FFF4F6). View button is outlined dusty rose, fills on hover.
+
+Patient detail page: header section with mother's name in 24px bold, age and gestational age in gray, current risk badge large and prominent, assigned clinic name below. Two column layout below — left column has a Recharts line chart for vitals over time using dusty rose as the primary line color with a soft blush fill underneath, right column shows latest vitals as 4 stat cards in a 2x2 grid. Below charts show EPDS score section with a lavender (#D8C4E8) background card showing latest score, PPD flag if score is 10 or above, and score history. Bottom section is full check-in history in a clean timeline with blush pink dots.
+
+Alerts page: alerts sorted newest first. Unread alert cards have #C94F6D left border and #FCE8EE background. Read alerts are white with gray text. Each card shows patient name in bold, alert type badge, message, time in gray, and a Mark as Read button in outlined dusty rose.
+
+Use Supabase Realtime so dashboard and alerts update live without page refresh. Show a Toast notification in the bottom right when a new high risk alert comes in — warm rose background, white text, with patient name.
+
+---
+
+**Mobile app (React Native + Expo):**
+
+Use Expo with TypeScript and Expo Router. Use NativeWind for styling with the exact same color tokens as the web. All touchable elements minimum height 48px. Form inputs 16px font size to prevent iOS zoom. KeyboardAvoidingView on all form screens.
+
+Bottom tab navigation with 4 tabs: Home, Check-in, History, Profile. Tab bar is warm white with a top shadow, dusty rose active icon and label, gray inactive.
+
+Home screen: warm cream background. At the top show a soft greeting card — white rounded-2xl card with "Good morning, Fatima 🌸" in 22px bold charcoal, and today's date in gray below. Below that show the current risk status card — large rounded-2xl card that changes color based on risk: sage green gradient for low, warm amber gradient for mid, deep rose gradient for high. Card shows risk level label in white bold, a short supportive message ("You're doing great, keep it up" for low, "Please monitor closely" for mid, "Please contact your clinic today" for high), and last check-in time in white with 70% opacity. Below the risk card show a full-width dusty rose button "Start Today's Check-in" with white text and a soft shadow. Below the button show 4 small peach chip cards in a row for yesterday's key vitals.
+
+Check-in form screen: warm cream background, scrollable. Three card sections each in white rounded-2xl with soft shadow. Vitals card: labeled numeric inputs for BP systolic, BP diastolic, blood sugar, body temperature, heart rate — each with a blush pink focus ring and a small icon on the left. Symptoms card: multi-select pill buttons for headache, dizziness, swelling, bleeding, fever, nausea, chest pain, blurred vision — unselected pills are white with #EDE8E3 border, selected pills are blush pink background with dusty rose border and text. Notes card: multiline text input with placeholder "Anything else you want to tell your clinic?" At the bottom a full-width dusty rose Submit button. On submit show a loading spinner in dusty rose, then navigate to a result screen with a large colored risk card, the risk level label, a supportive message, and a "Return Home" button.
+
+EPDS questionnaire screen: lavender (#D8C4E8) header bar showing "Mental Health Check" and progress bar in dusty rose. One question card per screen, white rounded-2xl. Four answer options as full-width pill buttons — unselected white with border, selected lavender background with dusty rose border. Next button at bottom in dusty rose. Final screen shows score out of 30, a colored result card, and a supportive message.
+
+History screen: warm cream background. Vertical timeline — blush pink dot connected by a dusty rose dashed line on the left. Each entry is a white rounded-xl card showing date, risk badge, and key vitals in a small row. Tap a card to expand and see full check-in details.
+
+Profile screen: white card at top with mother's avatar (initials in dusty rose circle), name, age, gestational age, due date countdown ("28 days to due date" in peach badge), assigned clinic. Below that an Edit Details button in outlined dusty rose. At the very bottom a Sign Out button in light gray text, no background.
+
+---
+
+**Supabase database — create these tables:**
+
+users — id (uuid primary key), email (text unique), role (enum: mother, clinic_staff, admin), created_at (timestamptz default now())
+
+clinics — id (uuid primary key), name (text), location (text), contact (text), created_at
+
+mothers — id (uuid primary key), user_id (uuid references users), name (text), age (int), gestational_age (int), clinic_id (uuid references clinics), due_date (date), created_at
+
+staff — id (uuid primary key), user_id (uuid references users), clinic_id (uuid references clinics), name (text), role (text), created_at
+
+checkins — id (uuid primary key), mother_id (uuid references mothers), bp_systolic (int), bp_diastolic (int), blood_sugar (float), body_temp (float), heart_rate (int), symptoms (text array), notes (text), risk_score (float), risk_level (enum: low, mid, high), created_at
+
+epds_responses — id (uuid primary key), mother_id (uuid references mothers), responses (jsonb), total_score (int), ppd_flagged (boolean default false), created_at
+
+alerts — id (uuid primary key), mother_id (uuid references mothers), clinic_id (uuid references clinics), alert_type (text), message (text), is_read (boolean default false), created_at
+
+RLS policies:
+- Mothers can only select and insert their own rows in checkins and epds_responses
+- Clinic staff can only select mothers, checkins, epds_responses, and alerts where clinic_id matches their assigned clinic
+- Alerts visible only to the clinic they belong to
+
+---
+
+**Risk scoring API:**
+
+Next.js API route at /api/risk. Accepts POST with bp_systolic, bp_diastolic, blood_sugar, body_temp, heart_rate, age, mother_id. Returns risk_level and risk_score.
+
+Thresholds:
+- High: bp_systolic above 140, or bp_diastolic above 90, or blood_sugar above 11, or body_temp above 38.5
+- Mid: bp_systolic above 130, or bp_diastolic above 85, or blood_sugar above 7.8
+- Otherwise: Low
+
+After calculating, update the checkin row with risk_level and risk_score. If high risk, insert into alerts with alert_type "high_risk_vitals" and a message specifying which vital triggered it.
+
+---
+
+**Environment variables:**
+NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY
+
+---
+
+**Seed script:**
+Write a seed script at /scripts/seed.ts that inserts 2 clinics, 5 mothers with Bangladeshi names (Fatima, Nasrin, Sumaiya, Roksana, Bristy), 20 check-ins spread across the last 7 days with mixed risk levels, 3 EPDS responses, and 2 unread high risk alerts. Run this automatically so the dashboard has real data on first load.
+
+---
+
+**Build order:**
+1. Set up monorepo structure and shared types
+2. Set up Supabase tables and RLS
+3. Build web dashboard with seed data visible
+4. Build mobile app
+5. Connect risk API
+6. Add Supabase Realtime to dashboard and alerts
+
+Use Skeleton loading states everywhere. Use Toast for real-time alert notifications. Every screen should look complete and polished on first load using seed data.
+
+---
+
+Paste that entire thing into Replit Agent. Want me to write the Supabase SQL migration file to go with it?

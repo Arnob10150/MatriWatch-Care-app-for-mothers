@@ -1,0 +1,20 @@
+import { Router, type IRouter } from "express";
+import healthRouter from "./health";
+import mothersRouter from "./mothers";
+import checkinsRouter from "./checkins";
+import alertsRouter from "./alerts";
+import epdsRouter from "./epds";
+import dashboardRouter from "./dashboard";
+import riskRouter from "./risk";
+
+const router: IRouter = Router();
+
+router.use(healthRouter);
+router.use(mothersRouter);
+router.use(checkinsRouter);
+router.use(alertsRouter);
+router.use(epdsRouter);
+router.use(dashboardRouter);
+router.use(riskRouter);
+
+export default router;

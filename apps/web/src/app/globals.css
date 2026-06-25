@@ -1,0 +1,56 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 32 100% 97%;
+  --foreground: 0 0% 18%;
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 18%;
+  --border: 30 29% 91%;
+  --muted: 24 100% 95%;
+  --muted-foreground: 240 7% 51%;
+  --primary: 350 43% 64%;
+  --primary-foreground: 0 0% 100%;
+  --destructive: 345 54% 55%;
+  --ring: 350 43% 64%;
+  --radius: 1rem;
+}
+
+* {
+  border-color: hsl(var(--border));
+}
+
+html {
+  background: hsl(var(--background));
+}
+
+body {
+  min-height: 100vh;
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
+
+.motherly-card-shadow {
+  box-shadow: 0 1px 4px rgba(201, 124, 138, 0.08);
+}
+
+.motherly-focus:focus {
+  border-color: #f9b8c4;
+  box-shadow: 0 0 0 3px rgba(249, 184, 196, 0.35);
+}
+
+.animate-enter {
+  animation: enter 0.35s ease-out both;
+}
+
+@keyframes enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

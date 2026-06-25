@@ -1,0 +1,34 @@
+Mothers
+Who they are
+Pregnant and postpartum women in Bangladesh aged 18 to 40 with an Android phone. They visit the clinic infrequently — maybe once a month. Between visits they have no way to communicate their health status to their doctor unless something goes seriously wrong.
+What they actually do on the app
+They download MatriWatch from the Play Store. They sign up, enter their name, age, gestational age, due date, and select their clinic from a dropdown list. That's the one-time setup.
+Every day they open the app and fill out a check-in form. They enter their BP reading from a home reading or from the nearest pharmacy, their blood sugar, temperature, and heart rate. They tap on any symptoms they have from a simple list. They hit submit.
+The app immediately shows them their risk level — a big colored card. Green means you're fine. Amber means watch out. Red means contact your clinic today.
+Once a week the app prompts them to answer 10 simple mood questions — the EPDS questionnaire. Takes 3 minutes.
+They can scroll back through their history and see how their readings have changed over the past week.
+If they haven't checked in by a certain time the app sends a push notification reminding them.
+How they benefit
+They know whether their symptoms are serious or not without having to travel to the clinic. They catch dangerous conditions like high blood pressure early. They feel monitored and cared for between clinic visits. Their doctor already knows their full history before they even walk into the appointment. Postpartum depression gets caught early instead of suffering in silence for months.
+
+Doctors
+Who they are
+Doctors at small to mid-size maternal health clinics in Bangladesh. They manage anywhere from 20 to 100 registered patients. They have no visibility into what is happening to those patients between visits.
+What they actually do on the dashboard
+They open the MatriWatch web dashboard on their laptop or desktop browser at the start of their day. They see a clean list of all their registered patients. Each patient has a colored risk badge next to their name — green, amber, or red — based on their most recent check-in.
+They immediately know who needs attention today without calling anyone. They click on a red patient and see exactly which reading triggered the high risk flag, the full history of that patient's vitals over the past week, and any symptoms they reported.
+When a patient submits a high-risk check-in the doctor gets a real-time notification on the dashboard. They can then call the patient directly or schedule an urgent visit.
+Before a patient's scheduled clinic appointment the doctor reviews their MatriWatch history — they already know the trends, the symptoms, and the risk pattern before the patient sits down. The appointment becomes much more productive.
+How they benefit
+They go from having zero information between visits to having daily data on every patient. They catch complications early. They prioritize their attention on the patients who actually need it today. Appointments are more efficient because the history is already there. They save time they would have spent on routine check-up phone calls.
+
+Nurses
+Who they are
+Nurses at the same clinics who handle patient follow-ups, coordinate care, and are usually the first person a patient contacts when something feels wrong.
+What they actually do on the dashboard
+They check the alerts page at the start of their shift. Any patient who submitted a high-risk check-in shows up here as an unread alert with a clear message explaining what triggered it — for example "Nasrin Akter — BP systolic 148, fever reported."
+They call the patient, assess the situation, and decide whether to escalate to the doctor or advise the patient to come in. They mark the alert as resolved after following up so the rest of the team knows it has been handled.
+They check which patients haven't submitted a check-in in the last two days and follow up with those patients directly.
+They monitor EPDS scores and when a patient scores 10 or above they follow up with a call to assess the situation and refer to mental health support if needed.
+How they benefit
+They have a clear organized list of who needs attention today instead of managing everything through scattered phone calls and paper notes. Nothing falls through the cracks because every high-risk event stays as an unread alert until someone handles it. They spend less time chasing patients and more time on actual care. They can show their doctor a clear record of every follow-up they did.

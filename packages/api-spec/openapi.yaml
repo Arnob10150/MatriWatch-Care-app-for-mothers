@@ -1,0 +1,618 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: MatriWatch maternal health monitoring API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: mothers
+    description: Mother patient operations
+  - name: checkins
+    description: Check-in vital operations
+  - name: alerts
+    description: Alert management operations
+  - name: epds
+    description: EPDS mental health questionnaire
+  - name: dashboard
+    description: Dashboard summary and analytics
+  - name: risk
+    description: Risk scoring
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /mothers:
+    get:
+      operationId: listMothers
+      tags: [mothers]
+      summary: List all mothers
+      parameters:
+        - name: clinic_id
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: risk_level
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of mothers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Mother"
+    post:
+      operationId: createMother
+      tags: [mothers]
+      summary: Create a mother record
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MotherInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Mother"
+
+  /mothers/{id}:
+    get:
+      operationId: getMother
+      tags: [mothers]
+      summary: Get a mother by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Mother record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MotherDetail"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateMother
+      tags: [mothers]
+      summary: Update mother details
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MotherUpdate"
+      responses:
+        "200":
+          description: Updated mother
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Mother"
+
+  /checkins:
+    get:
+      operationId: listCheckins
+      tags: [checkins]
+      summary: List check-ins
+      parameters:
+        - name: mother_id
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of check-ins
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Checkin"
+    post:
+      operationId: createCheckin
+      tags: [checkins]
+      summary: Submit a new check-in with vitals
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CheckinInput"
+      responses:
+        "201":
+          description: Created check-in with computed risk
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Checkin"
+
+  /checkins/{id}:
+    get:
+      operationId: getCheckin
+      tags: [checkins]
+      summary: Get a specific check-in
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Check-in record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Checkin"
+
+  /alerts:
+    get:
+      operationId: listAlerts
+      tags: [alerts]
+      summary: List alerts
+      parameters:
+        - name: clinic_id
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: is_read
+          in: query
+          required: false
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: List of alerts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Alert"
+
+  /alerts/{id}/read:
+    patch:
+      operationId: markAlertRead
+      tags: [alerts]
+      summary: Mark an alert as read
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Updated alert
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Alert"
+
+  /epds:
+    post:
+      operationId: submitEpds
+      tags: [epds]
+      summary: Submit EPDS questionnaire response
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EpdsInput"
+      responses:
+        "201":
+          description: Recorded EPDS response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EpdsResponse"
+
+  /epds/{mother_id}:
+    get:
+      operationId: listEpdsForMother
+      tags: [epds]
+      summary: Get EPDS history for a mother
+      parameters:
+        - name: mother_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: EPDS responses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EpdsResponse"
+
+  /dashboard/stats:
+    get:
+      operationId: getDashboardStats
+      tags: [dashboard]
+      summary: Get dashboard summary statistics
+      parameters:
+        - name: clinic_id
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Dashboard stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStats"
+
+  /dashboard/recent-alerts:
+    get:
+      operationId: getRecentAlerts
+      tags: [dashboard]
+      summary: Get recent unread alerts for dashboard feed
+      parameters:
+        - name: clinic_id
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Recent alerts with mother info
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AlertWithMother"
+
+  /risk/calculate:
+    post:
+      operationId: calculateRisk
+      tags: [risk]
+      summary: Calculate risk level from vitals
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RiskInput"
+      responses:
+        "200":
+          description: Risk calculation result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RiskResult"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    Mother:
+      type: object
+      required: [id, name, age, created_at]
+      properties:
+        id:
+          type: string
+        user_id:
+          type: ["string", "null"]
+        name:
+          type: string
+        age:
+          type: integer
+        gestational_age:
+          type: ["integer", "null"]
+        clinic_id:
+          type: ["string", "null"]
+        clinic_name:
+          type: ["string", "null"]
+        due_date:
+          type: ["string", "null"]
+        current_risk_level:
+          type: ["string", "null"]
+        last_checkin_at:
+          type: ["string", "null"]
+        created_at:
+          type: string
+
+    MotherDetail:
+      type: object
+      required: [id, name, age, created_at]
+      properties:
+        id:
+          type: string
+        user_id:
+          type: ["string", "null"]
+        name:
+          type: string
+        age:
+          type: integer
+        gestational_age:
+          type: ["integer", "null"]
+        clinic_id:
+          type: ["string", "null"]
+        clinic_name:
+          type: ["string", "null"]
+        due_date:
+          type: ["string", "null"]
+        current_risk_level:
+          type: ["string", "null"]
+        last_checkin_at:
+          type: ["string", "null"]
+        created_at:
+          type: string
+        recent_checkins:
+          type: array
+          items:
+            $ref: "#/components/schemas/Checkin"
+        epds_responses:
+          type: array
+          items:
+            $ref: "#/components/schemas/EpdsResponse"
+
+    MotherInput:
+      type: object
+      required: [name, age]
+      properties:
+        name:
+          type: string
+        age:
+          type: integer
+        gestational_age:
+          type: ["integer", "null"]
+        clinic_id:
+          type: ["string", "null"]
+        due_date:
+          type: ["string", "null"]
+
+    MotherUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        age:
+          type: integer
+        gestational_age:
+          type: ["integer", "null"]
+        clinic_id:
+          type: ["string", "null"]
+        due_date:
+          type: ["string", "null"]
+
+    Checkin:
+      type: object
+      required: [id, mother_id, created_at]
+      properties:
+        id:
+          type: string
+        mother_id:
+          type: string
+        mother_name:
+          type: ["string", "null"]
+        bp_systolic:
+          type: ["integer", "null"]
+        bp_diastolic:
+          type: ["integer", "null"]
+        blood_sugar:
+          type: ["number", "null"]
+        body_temp:
+          type: ["number", "null"]
+        heart_rate:
+          type: ["integer", "null"]
+        symptoms:
+          type: array
+          items:
+            type: string
+        notes:
+          type: ["string", "null"]
+        risk_score:
+          type: ["number", "null"]
+        risk_level:
+          type: ["string", "null"]
+        created_at:
+          type: string
+
+    CheckinInput:
+      type: object
+      required: [mother_id]
+      properties:
+        mother_id:
+          type: string
+        bp_systolic:
+          type: ["integer", "null"]
+        bp_diastolic:
+          type: ["integer", "null"]
+        blood_sugar:
+          type: ["number", "null"]
+        body_temp:
+          type: ["number", "null"]
+        heart_rate:
+          type: ["integer", "null"]
+        symptoms:
+          type: array
+          items:
+            type: string
+        notes:
+          type: ["string", "null"]
+
+    Alert:
+      type: object
+      required: [id, mother_id, clinic_id, alert_type, message, is_read, created_at]
+      properties:
+        id:
+          type: string
+        mother_id:
+          type: string
+        clinic_id:
+          type: string
+        alert_type:
+          type: string
+        message:
+          type: string
+        is_read:
+          type: boolean
+        created_at:
+          type: string
+
+    AlertWithMother:
+      type: object
+      required: [id, mother_id, clinic_id, alert_type, message, is_read, created_at]
+      properties:
+        id:
+          type: string
+        mother_id:
+          type: string
+        mother_name:
+          type: ["string", "null"]
+        clinic_id:
+          type: string
+        alert_type:
+          type: string
+        message:
+          type: string
+        is_read:
+          type: boolean
+        created_at:
+          type: string
+
+    EpdsInput:
+      type: object
+      required: [mother_id, responses, total_score]
+      properties:
+        mother_id:
+          type: string
+        responses:
+          type: object
+        total_score:
+          type: integer
+        ppd_flagged:
+          type: boolean
+
+    EpdsResponse:
+      type: object
+      required: [id, mother_id, responses, total_score, created_at]
+      properties:
+        id:
+          type: string
+        mother_id:
+          type: string
+        responses:
+          type: object
+        total_score:
+          type: integer
+        ppd_flagged:
+          type: boolean
+        created_at:
+          type: string
+
+    DashboardStats:
+      type: object
+      required: [total_patients, high_risk_count, alerts_today, checkins_today, risk_breakdown]
+      properties:
+        total_patients:
+          type: integer
+        high_risk_count:
+          type: integer
+        alerts_today:
+          type: integer
+        checkins_today:
+          type: integer
+        risk_breakdown:
+          type: object
+          properties:
+            low:
+              type: integer
+            mid:
+              type: integer
+            high:
+              type: integer
+          required: [low, mid, high]
+
+    RiskInput:
+      type: object
+      required: [bp_systolic, bp_diastolic, blood_sugar, body_temp, heart_rate, mother_id]
+      properties:
+        mother_id:
+          type: string
+        bp_systolic:
+          type: integer
+        bp_diastolic:
+          type: integer
+        blood_sugar:
+          type: number
+        body_temp:
+          type: number
+        heart_rate:
+          type: integer
+        age:
+          type: ["integer", "null"]
+
+    RiskResult:
+      type: object
+      required: [risk_level, risk_score]
+      properties:
+        risk_level:
+          type: string
+        risk_score:
+          type: number
+        triggered_by:
+          type: array
+          items:
+            type: string

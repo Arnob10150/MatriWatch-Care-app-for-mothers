@@ -1,0 +1,115 @@
+{
+  "project": "MatriWatch",
+  "datasets": [
+    {
+      "id": "current_ppd_local",
+      "module": "postpartum_depression",
+      "source": "local",
+      "title": "Current local PPD dataset from existing research",
+      "path": "datasets/current_ppd/PPD_dataset_v2.csv",
+      "status": "included"
+    },
+    {
+      "id": "maternal_health_risk_iot_bd",
+      "module": "risk_classification",
+      "source": "kaggle",
+      "slug": "csafrit2/maternal-health-risk-data",
+      "title": "Maternal Health Risk Data",
+      "source_url": "https://www.kaggle.com/datasets/csafrit2/maternal-health-risk-data",
+      "target_dir": "datasets/raw/kaggle/maternal-health-risk-data"
+    },
+    {
+      "id": "maternal_health_features",
+      "module": "risk_classification",
+      "source": "kaggle",
+      "slug": "ziya07/maternal-health-features-dataset",
+      "title": "Maternal Health Features Dataset",
+      "source_url": "https://www.kaggle.com/datasets/ziya07/maternal-health-features-dataset",
+      "target_dir": "datasets/raw/kaggle/maternal-health-features-dataset"
+    },
+    {
+      "id": "maternal_health_risk_assessment_mendeley",
+      "module": "risk_classification",
+      "source": "mendeley",
+      "dataset_id": "p5w98dvbbk",
+      "version": "1",
+      "title": "Maternal Health Risk Assessment Dataset",
+      "source_url": "https://data.mendeley.com/datasets/p5w98dvbbk/1",
+      "target_dir": "datasets/raw/mendeley/p5w98dvbbk"
+    },
+    {
+      "id": "high_risk_pregnancy_kaggle",
+      "module": "high_risk_pregnancy",
+      "source": "kaggle",
+      "slug": "ankurray00/maternal-health-and-high-risk-pregnancy-dataset",
+      "title": "Maternal Health and High-Risk Pregnancy Dataset",
+      "source_url": "https://www.kaggle.com/datasets/ankurray00/maternal-health-and-high-risk-pregnancy-dataset",
+      "target_dir": "datasets/raw/kaggle/maternal-health-and-high-risk-pregnancy-dataset"
+    },
+    {
+      "id": "high_risk_pregnancy_mendeley",
+      "module": "high_risk_pregnancy",
+      "source": "mendeley",
+      "dataset_id": "8k9pvpmykk",
+      "version": "1",
+      "title": "Maternal Health and High-Risk Pregnancy Dataset",
+      "source_url": "https://data.mendeley.com/datasets/8k9pvpmykk/1",
+      "target_dir": "datasets/raw/mendeley/8k9pvpmykk"
+    },
+    {
+      "id": "fetal_health_ctg",
+      "module": "fetal_monitoring",
+      "source": "kaggle",
+      "slug": "andrewmvd/fetal-health-classification",
+      "title": "Fetal Health Classification",
+      "source_url": "https://www.kaggle.com/datasets/andrewmvd/fetal-health-classification",
+      "target_dir": "datasets/raw/kaggle/fetal-health-classification"
+    },
+    {
+      "id": "postpartum_depression_kaggle",
+      "module": "postpartum_depression",
+      "source": "kaggle",
+      "slug": "parvezalmuqtadir2348/postpartum-depression",
+      "title": "PostPartum Depression",
+      "source_url": "https://www.kaggle.com/datasets/parvezalmuqtadir2348/postpartum-depression",
+      "target_dir": "datasets/raw/kaggle/postpartum-depression"
+    },
+    {
+      "id": "gdm_sumathi",
+      "module": "gestational_diabetes",
+      "source": "kaggle",
+      "slug": "sumathisanthosh/gestational-diabetes-mellitus-gdm-data-set",
+      "title": "Gestational Diabetes Mellitus GDM Data Set",
+      "source_url": "https://www.kaggle.com/datasets/sumathisanthosh/gestational-diabetes-mellitus-gdm-data-set",
+      "target_dir": "datasets/raw/kaggle/gestational-diabetes-mellitus-gdm-data-set"
+    },
+    {
+      "id": "gdm_rasool",
+      "module": "gestational_diabetes",
+      "source": "kaggle",
+      "slug": "rasooljader/gestational-diabetes",
+      "title": "Gestational Diabetes",
+      "source_url": "https://www.kaggle.com/datasets/rasooljader/gestational-diabetes",
+      "target_dir": "datasets/raw/kaggle/gestational-diabetes"
+    },
+    {
+      "id": "ai_symptom_checker_2025",
+      "module": "symptom_checker",
+      "source": "kaggle",
+      "slug": "mdtalhask/ai-powered-symptom-checker-dataset-2025",
+      "title": "AI-Powered Symptom Checker Dataset 2025",
+      "source_url": "https://www.kaggle.com/datasets/mdtalhask/ai-powered-symptom-checker-dataset-2025",
+      "target_dir": "datasets/raw/kaggle/ai-powered-symptom-checker-dataset-2025"
+    },
+    {
+      "id": "symptom_disease_labeling",
+      "module": "symptom_checker",
+      "source": "kaggle",
+      "slug": "krish0202/symptom-based-disease-labeling-dataset",
+      "title": "Symptom-Based Disease Labeling Dataset",
+      "source_url": "https://www.kaggle.com/datasets/krish0202/symptom-based-disease-labeling-dataset",
+      "target_dir": "datasets/raw/kaggle/symptom-based-disease-labeling-dataset"
+    }
+  ]
+}
+
