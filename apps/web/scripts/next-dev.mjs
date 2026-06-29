@@ -1,29 +1,15 @@
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
-import path from "node:path";
 
 const require = createRequire(import.meta.url);
-const Module = require("node:module");
-const originalResolveFilename = Module._resolveFilename;
-const webRoot = path.dirname(fileURLToPath(new URL("../package.json", import.meta.url)));
-const webParent = {
-  id: path.join(webRoot, "package.json"),
-  filename: path.join(webRoot, "package.json"),
-  paths: Module._nodeModulePaths(webRoot)
-};
 
-Module._resolveFilename = function resolveWebReact(request, parent, isMain, options) {
-  if (
-    request === "react" ||
-    request.startsWith("react/") ||
-    request === "react-dom" ||
-    request.startsWith("react-dom/")
-  ) {
-    return originalResolveFilename.call(this, request, webParent, false, options);
-  }
+require("./react-resolve-preload.cjs");
 
-  return originalResolveFilename.call(this, request, parent, isMain, options);
-};
+const preloadPath = fileURLToPath(new URL("./react-resolve-preload.cjs", import.meta.url));
+const existingNodeOptions = process.env.NODE_OPTIONS ?? "";
+if (!existingNodeOptions.includes("react-resolve-preload")) {
+  process.env.NODE_OPTIONS = `${existingNodeOptions} --require ${JSON.stringify(preloadPath)}`.trim();
+}
 
 process.env.NEXT_IGNORE_INCORRECT_LOCKFILE ??= "1";
 process.argv = [process.argv[0], "next", "dev", ...process.argv.slice(2)];

@@ -27,7 +27,7 @@ const ROLES = [
     activeBorder: "#87A878",
     activeBg: "#F0F7ED",
     buttonColor: "#87A878",
-    redirect: "/nurse",
+    redirect: "/dashboard",
   },
   {
     id: "Mother",
@@ -63,16 +63,23 @@ export default function LoginPage() {
     }
     setError("");
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 400));
-    const name = email
-      .split("@")[0]
-      .replace(/[._-]/g, " ")
-      .replace(/\b\w/g, (c) => c.toUpperCase());
-    if (typeof window !== "undefined") {
-      localStorage.setItem("matriwatch_auth", JSON.stringify({ email, name, role }));
+    try {
+      await new Promise((r) => setTimeout(r, 400));
+      const name = email
+        .split("@")[0]
+        .replace(/[._-]/g, " ")
+        .replace(/\b\w/g, (c) => c.toUpperCase());
+      try {
+        localStorage.setItem("matriwatch_auth", JSON.stringify({ email, name, role }));
+      } catch {
+        // Storage may be unavailable (private mode, sandboxed preview, etc.) - non-fatal.
+      }
+      router.push(selectedRole.redirect);
+    } catch (err) {
+      setError("Something went wrong signing in. Please try again.");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
-    router.push(selectedRole.redirect);
   }
 
   return (

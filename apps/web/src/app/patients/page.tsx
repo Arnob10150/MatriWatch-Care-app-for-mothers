@@ -1,9 +1,11 @@
-import { patientSummaries } from "@matriwatch/shared";
+import { getPatientSummaries } from "@/lib/api";
 import { PatientTable } from "@/components/dashboard/patient-table";
 import { ClinicShell } from "@/components/layout/clinic-shell";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
-export default function PatientsPage() {
+export default async function PatientsPage() {
+  const { patients } = await getPatientSummaries();
+
   return (
     <ClinicShell>
       <main className="min-h-screen px-4 py-6 sm:px-6 lg:px-8">
@@ -18,7 +20,7 @@ export default function PatientsPage() {
               <CardDescription>Open a patient to review vitals, EPDS status, and AI risk explanation.</CardDescription>
             </CardHeader>
             <CardContent>
-              <PatientTable patients={patientSummaries} />
+              <PatientTable patients={patients} />
             </CardContent>
           </Card>
         </div>

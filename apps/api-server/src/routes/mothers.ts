@@ -1,3 +1,4 @@
+import { sendServerError } from "../lib/http-errors";
 import { Router, type IRouter } from "express";
 import { db } from "@workspace/db";
 import {
@@ -59,7 +60,7 @@ router.get("/mothers", async (req, res): Promise<void> => {
     res.json(result);
   } catch (err) {
     req.log.error({ err }, "Failed to list mothers");
-    res.status(500).json({ error: "Internal server error" });
+    sendServerError(res, err);
   }
 });
 
@@ -90,7 +91,7 @@ router.post("/mothers", async (req, res): Promise<void> => {
     });
   } catch (err) {
     req.log.error({ err }, "Failed to create mother");
-    res.status(500).json({ error: "Internal server error" });
+    sendServerError(res, err);
   }
 });
 
@@ -156,7 +157,7 @@ router.get("/mothers/:id", async (req, res): Promise<void> => {
     });
   } catch (err) {
     req.log.error({ err }, "Failed to get mother");
-    res.status(500).json({ error: "Internal server error" });
+    sendServerError(res, err);
   }
 });
 
@@ -186,7 +187,7 @@ router.patch("/mothers/:id", async (req, res): Promise<void> => {
     res.json({ ...updated, clinic_name: null, current_risk_level: null, last_checkin_at: null });
   } catch (err) {
     req.log.error({ err }, "Failed to update mother");
-    res.status(500).json({ error: "Internal server error" });
+    sendServerError(res, err);
   }
 });
 

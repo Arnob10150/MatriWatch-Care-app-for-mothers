@@ -1,131 +1,149 @@
-import { Link, useLocation } from "wouter";
-import { Home, ClipboardList, Clock, LogOut, Heart } from "lucide-react";
-import { clearAuth, getAuth } from "@/lib/auth";
-import { playTap, playNavSwipe } from "@/lib/sounds";
+"use client";
+
+import { useEffect, useState, type ReactNode } from "react";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { Home, ClipboardList, Clock, MessageCircle, LogOut, Heart } from "lucide-react";
+import { clearAuth, getAuth, type AuthUser } from "@/lib/auth";
+import { playTap } from "@/lib/sounds";
 
 interface MotherLayoutProps {
-  children: React.ReactNode;
+  children: ReactNode;
   title?: string;
 }
 
 const NAV = [
-  { href: "/mother/home", label: "Home", icon: Home },
+  { href: "/mother", label: "Home", icon: Home },
   { href: "/mother/checkin", label: "Check In", icon: ClipboardList },
+  { href: "/mother/epds", label: "Mood Check", icon: MessageCircle },
   { href: "/mother/history", label: "History", icon: Clock },
-];
+] as const;
 
 export function MotherLayout({ children, title }: MotherLayoutProps) {
-  const [location, setLocation] = useLocation();
-  const user = getAuth();
+  const pathname = usePathname();
+  const router = useRouter();
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [checkedAuth, setCheckedAuth] = useState(false);
+
+  useEffect(() => {
+    const auth = getAuth();
+    if (!auth) {
+      router.replace("/login");
+      return;
+    }
+    setUser(auth);
+    setCheckedAuth(true);
+  }, [router]);
 
   function handleSignOut() {
     clearAuth();
-    setLocation("/login");
+    router.push("/login");
   }
 
-  return (
-    /*
-     * On desktop: show a centred phone-frame so staff can demo the mother view.
-     * On mobile: full-screen native feel.
-     */
-    <div
-      className="min-h-screen flex items-start justify-center"
-      style={{ backgroundColor: "#E8DDD8" }}
-    >
-      <div
-        className="relative flex flex-col bg-white overflow-hidden"
-        style={{
-          width: "100%",
-          maxWidth: 430,
-          minHeight: "100svh",
-          /* Subtle phone shadow on desktop */
-          boxShadow: "0 8px 40px rgba(0,0,0,0.18)",
-        }}
-      >
-        {/* Android status bar strip */}
-        <div style={{ height: 28, backgroundColor: "#B56878", flexShrink: 0 }} />
+  if (!checkedAuth) {
+    return null;
+  }
 
-        {/* App toolbar */}
-        <header
-          className="flex items-center justify-between px-4 py-3 flex-shrink-0"
-          style={{ backgroundColor: "#C97C8A" }}
-        >
-          <div className="flex items-center gap-2.5">
-            <div
-              className="w-8 h-8 rounded-full flex items-center justify-center"
-              style={{ backgroundColor: "rgba(255,255,255,0.25)" }}
-            >
-              <Heart className="w-4 h-4 text-white fill-white" />
+  const displayName = user?.name ?? "Guest";
+  const initials = displayName
+    .split(" ")
+    .map((part) => part[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+
+  return (
+    <div className="min-h-screen bg-background text-foreground">
+      <aside className="fixed left-0 top-0 z-40 hidden h-screen w-60 flex-col bg-primary text-white lg:flex">
+        <div className="border-b border-white/20 p-6">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20">
+              <Heart className="h-5 w-5 text-white" fill="rgba(255,255,255,0.18)" />
             </div>
             <div>
-              <p className="text-white font-bold text-sm leading-tight">
-                {title ?? "MatriWatch"}
-              </p>
-              {user?.name && !title && (
-                <p className="text-white/70 leading-tight" style={{ fontSize: 11 }}>
-                  {user.name.split(" ")[0]}
-                </p>
-              )}
+              <h1 className="text-lg font-bold tracking-normal">MatriWatch</h1>
+              <p className="text-xs font-medium text-white/75">My Care Plan</p>
+            </div>
+          </div>
+        </div>
+
+        <nav className="flex-1 space-y-2 overflow-y-auto p-4">
+          <p className="px-4 py-2 text-xs font-semibold uppercase tracking-wider text-white/60">Care</p>
+          {NAV.map((link) => {
+            const isActive = link.href === "/mother" ? pathname === "/mother" : pathname.startsWith(link.href);
+            return (
+              <Link
+                key={link.label}
+                href={link.href}
+                onClick={() => { if (!isActive) playTap(); }}
+                className={`flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors ${
+                  isActive ? "bg-white text-primary" : "text-white/80 hover:bg-white/10 hover:text-white"
+                }`}
+                data-testid={`nav-mother-${link.label.toLowerCase().replace(/ /g, "-")}`}
+              >
+                <link.icon className="h-5 w-5" />
+                {link.label}
+              </Link>
+            );
+          })}
+        </nav>
+
+        <div className="border-t border-white/20 p-4">
+          <div className="mb-4 flex items-center gap-3 px-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-xs font-bold text-primary">
+              {initials || "?"}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium text-white">{displayName}</p>
+              <p className="truncate text-xs text-white/70">Mother</p>
             </div>
           </div>
           <button
             onClick={handleSignOut}
-            className="w-9 h-9 flex items-center justify-center rounded-full transition-all"
-            style={{ backgroundColor: "rgba(255,255,255,0.15)" }}
+            className="flex w-full items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium text-white/80 transition-colors hover:bg-white/10 hover:text-white"
             data-testid="button-signout"
           >
-            <LogOut className="w-4 h-4 text-white" />
+            <LogOut className="h-4 w-4" />
+            Sign out
           </button>
-        </header>
+        </div>
+      </aside>
 
-        {/* Scrollable content — bottom-nav clearance */}
-        <main
-          className="flex-1 overflow-y-auto"
-          style={{ backgroundColor: "#FFF8F0", paddingBottom: 72 }}
-        >
-          {children}
+      <div className="lg:pl-60">
+        {/* Mobile top bar */}
+        <div className="flex items-center justify-between border-b border-border bg-white px-4 py-3 lg:hidden">
+          <div className="flex items-center gap-2">
+            <Heart className="h-5 w-5 text-primary" fill="currentColor" />
+            <span className="font-semibold">{title ?? "MatriWatch"}</span>
+          </div>
+          <button
+            onClick={handleSignOut}
+            className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground hover:bg-muted"
+            data-testid="button-signout-mobile"
+          >
+            <LogOut className="h-4 w-4" />
+          </button>
+        </div>
+
+        <main className="min-h-screen bg-[#FFF8F0] pb-20 lg:pb-0">
+          <div className="mx-auto max-w-2xl">{children}</div>
         </main>
 
-        {/* Bottom navigation — Android material style */}
-        <nav
-          className="absolute bottom-0 left-0 right-0 flex items-stretch"
-          style={{
-            height: 64,
-            backgroundColor: "#FFFFFF",
-            borderTop: "1px solid #EDE8E3",
-            boxShadow: "0 -2px 10px rgba(0,0,0,0.07)",
-          }}
-        >
-          {NAV.map(({ href, label, icon: Icon }) => {
-            const active = location.startsWith(href);
+        {/* Mobile bottom nav */}
+        <nav className="fixed bottom-0 left-0 right-0 z-40 flex items-stretch border-t border-border bg-white lg:hidden">
+          {NAV.map((link) => {
+            const isActive = link.href === "/mother" ? pathname === "/mother" : pathname.startsWith(link.href);
             return (
               <Link
-                key={href}
-                href={href}
-                className="flex-1 flex flex-col items-center justify-center gap-1 relative"
-                onClick={() => { if (!active) { playTap(); playNavSwipe(); } }}
-                data-testid={`nav-mother-${label.toLowerCase().replace(/ /g, "-")}`}
+                key={link.href}
+                href={link.href}
+                onClick={() => { if (!isActive) playTap(); }}
+                className="flex flex-1 flex-col items-center justify-center gap-1 py-2.5"
+                data-testid={`nav-mother-mobile-${link.label.toLowerCase().replace(/ /g, "-")}`}
               >
-                {/* Active indicator pill behind icon */}
-                {active && (
-                  <span
-                    className="absolute top-2 rounded-full"
-                    style={{
-                      width: 56, height: 28,
-                      backgroundColor: "#FCE8EE",
-                      left: "50%", transform: "translateX(-50%)",
-                    }}
-                  />
-                )}
-                <Icon
-                  className="w-5 h-5 relative z-10"
-                  style={{ color: active ? "#C97C8A" : "#AEAEB8" }}
-                />
-                <span
-                  className="text-xs font-medium relative z-10"
-                  style={{ color: active ? "#C97C8A" : "#AEAEB8" }}
-                >
-                  {label}
+                <link.icon className="h-5 w-5" style={{ color: isActive ? "#C97C8A" : "#AEAEB8" }} />
+                <span className="text-xs font-medium" style={{ color: isActive ? "#C97C8A" : "#AEAEB8" }}>
+                  {link.label}
                 </span>
               </Link>
             );

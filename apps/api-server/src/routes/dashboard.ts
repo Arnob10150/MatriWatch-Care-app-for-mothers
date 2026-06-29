@@ -1,3 +1,4 @@
+import { sendServerError } from "../lib/http-errors";
 import { Router, type IRouter } from "express";
 import { db } from "@workspace/db";
 import {
@@ -62,7 +63,7 @@ router.get("/dashboard/stats", async (req, res): Promise<void> => {
     });
   } catch (err) {
     req.log.error({ err }, "Failed to get dashboard stats");
-    res.status(500).json({ error: "Internal server error" });
+    sendServerError(res, err);
   }
 });
 
@@ -93,7 +94,7 @@ router.get("/dashboard/recent-alerts", async (req, res): Promise<void> => {
     res.json(result);
   } catch (err) {
     req.log.error({ err }, "Failed to get recent alerts");
-    res.status(500).json({ error: "Internal server error" });
+    sendServerError(res, err);
   }
 });
 

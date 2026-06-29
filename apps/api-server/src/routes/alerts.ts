@@ -1,3 +1,4 @@
+import { sendServerError } from "../lib/http-errors";
 import { Router, type IRouter } from "express";
 import { db } from "@workspace/db";
 import { alertsTable, mothersTable } from "@workspace/db";
@@ -32,7 +33,7 @@ router.get("/alerts", async (req, res): Promise<void> => {
     res.json(result);
   } catch (err) {
     req.log.error({ err }, "Failed to list alerts");
-    res.status(500).json({ error: "Internal server error" });
+    sendServerError(res, err);
   }
 });
 
@@ -62,7 +63,7 @@ router.patch("/alerts/:id/read", async (req, res): Promise<void> => {
     });
   } catch (err) {
     req.log.error({ err }, "Failed to mark alert read");
-    res.status(500).json({ error: "Internal server error" });
+    sendServerError(res, err);
   }
 });
 

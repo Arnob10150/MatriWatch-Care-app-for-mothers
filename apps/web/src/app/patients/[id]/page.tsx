@@ -1,15 +1,15 @@
 import { notFound } from "next/navigation";
 import { ArrowLeft, CalendarDays, HeartPulse, UserRound } from "lucide-react";
 import Link from "next/link";
-import { patientSummaries } from "@matriwatch/shared";
+import { getPatientById } from "@/lib/api";
 import { RiskBadge } from "@/components/dashboard/risk-badge";
 import { TrendChart } from "@/components/dashboard/trend-chart";
 import { ClinicShell } from "@/components/layout/clinic-shell";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
-export default function PatientDetailPage({ params }: { params: { id: string } }) {
-  const patient = patientSummaries.find((item) => item.id === params.id);
+export default async function PatientDetailPage({ params }: { params: { id: string } }) {
+  const patient = await getPatientById(params.id);
 
   if (!patient) {
     notFound();

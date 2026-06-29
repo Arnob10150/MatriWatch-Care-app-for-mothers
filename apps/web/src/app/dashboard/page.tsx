@@ -8,7 +8,8 @@ import {
   Stethoscope,
   Users,
 } from "lucide-react";
-import { alerts, clinics, patientSummaries } from "@matriwatch/shared";
+import { clinics } from "@matriwatch/shared";
+import { getAlerts, getDashboardStats, getPatientSummaries } from "@/lib/api";
 import { AlertsPanel } from "@/components/dashboard/alerts-panel";
 import { MetricCard } from "@/components/dashboard/metric-card";
 import { PatientTable } from "@/components/dashboard/patient-table";
@@ -27,9 +28,17 @@ const modelRows = [
   ["Realtime alert channel", "ready", "mid"],
 ] as const;
 
-export default function DashboardPage() {
-  const highRisk = patientSummaries.filter((patient) => patient.risk.level === "High").length;
-  const checkinsToday = patientSummaries.filter(Boolean).length;
+export default async function DashboardPage() {
+  const [{ patients }, { alerts }, { stats }] = await Promise.all([
+    getPatientSummaries(),
+    getAlerts(),
+    getDashboardStats(),
+  ]);
+
+  const highRisk = stats?.high_risk_count ?? patients.filter((patient) => patient.risk.level === "High").length;
+  const checkinsToday = stats?.checkins_today ?? 0;
+  const alertsToday = stats?.alerts_today ?? alerts.length;
+  const totalPatients = stats?.total_patients ?? patients.length;
 
   return (
     <ClinicShell>
@@ -76,7 +85,7 @@ export default function DashboardPage() {
           <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             <MetricCard
               label="Total Patients"
-              value={`${patientSummaries.length}`}
+              value={`${totalPatients}`}
               detail="Registered in this clinic"
               tone="pink"
               icon={<Users className="h-5 w-5" />}
@@ -90,7 +99,7 @@ export default function DashboardPage() {
             />
             <MetricCard
               label="Alerts Today"
-              value={`${alerts.length}`}
+              value={`${alertsToday}`}
               detail="Unread and active events"
               tone="peach"
               icon={<BellRing className="h-5 w-5" />}
@@ -114,7 +123,7 @@ export default function DashboardPage() {
                 <Badge tone="high" className="h-7 w-fit">Priority queue</Badge>
               </CardHeader>
               <CardContent>
-                <PatientTable patients={patientSummaries} />
+                <PatientTable patients={patients} />
               </CardContent>
             </Card>
 
@@ -124,7 +133,7 @@ export default function DashboardPage() {
                 <CardDescription>High-risk vitals and EPDS flags for nurse follow-up.</CardDescription>
               </CardHeader>
               <CardContent>
-                <AlertsPanel />
+                <AlertsPanel alerts={alerts} />
               </CardContent>
             </Card>
           </section>

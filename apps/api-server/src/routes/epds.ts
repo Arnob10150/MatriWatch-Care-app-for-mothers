@@ -1,3 +1,4 @@
+import { sendServerError } from "../lib/http-errors";
 import { Router, type IRouter } from "express";
 import { db } from "@workspace/db";
 import { epdsResponsesTable } from "@workspace/db";
@@ -33,7 +34,7 @@ router.post("/epds", async (req, res): Promise<void> => {
     });
   } catch (err) {
     req.log.error({ err }, "Failed to submit EPDS");
-    res.status(500).json({ error: "Internal server error" });
+    sendServerError(res, err);
   }
 });
 
@@ -59,7 +60,7 @@ router.get("/epds/:mother_id", async (req, res): Promise<void> => {
     );
   } catch (err) {
     req.log.error({ err }, "Failed to list EPDS responses");
-    res.status(500).json({ error: "Internal server error" });
+    sendServerError(res, err);
   }
 });
 

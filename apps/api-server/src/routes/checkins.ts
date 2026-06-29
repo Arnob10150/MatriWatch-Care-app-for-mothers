@@ -1,3 +1,4 @@
+import { sendServerError } from "../lib/http-errors";
 import { Router, type IRouter } from "express";
 import { db } from "@workspace/db";
 import {
@@ -46,7 +47,7 @@ router.get("/checkins", async (req, res): Promise<void> => {
     res.json(rows.map((r) => ({ ...r, symptoms: r.symptoms ?? [] })));
   } catch (err) {
     req.log.error({ err }, "Failed to list checkins");
-    res.status(500).json({ error: "Internal server error" });
+    sendServerError(res, err);
   }
 });
 
@@ -140,7 +141,7 @@ router.post("/checkins", async (req, res): Promise<void> => {
     });
   } catch (err) {
     req.log.error({ err }, "Failed to create checkin");
-    res.status(500).json({ error: "Internal server error" });
+    sendServerError(res, err);
   }
 });
 
@@ -176,7 +177,7 @@ router.get("/checkins/:id", async (req, res): Promise<void> => {
     res.json({ ...row, symptoms: row.symptoms ?? [] });
   } catch (err) {
     req.log.error({ err }, "Failed to get checkin");
-    res.status(500).json({ error: "Internal server error" });
+    sendServerError(res, err);
   }
 });
 

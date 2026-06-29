@@ -1,8 +1,8 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Activity,
   BellRing,
@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { clearAuth, getAuth, type AuthUser } from "@/lib/auth";
 
 const links = [
   { href: "/dashboard", label: "Dashboard", icon: Activity },
@@ -26,6 +27,36 @@ const links = [
 
 export function ClinicShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [checkedAuth, setCheckedAuth] = useState(false);
+
+  useEffect(() => {
+    const auth = getAuth();
+    if (!auth) {
+      router.replace("/login");
+      return;
+    }
+    setUser(auth);
+    setCheckedAuth(true);
+  }, [router]);
+
+  function handleSignOut() {
+    clearAuth();
+    router.push("/login");
+  }
+
+  if (!checkedAuth) {
+    return null;
+  }
+
+  const displayName = user?.name ?? "Guest";
+  const initials = displayName
+    .split(" ")
+    .map((part) => part[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -67,14 +98,18 @@ export function ClinicShell({ children }: { children: ReactNode }) {
         <div className="border-t border-white/20 p-4">
           <div className="mb-4 flex items-center gap-3 px-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-xs font-bold text-primary">
-              DA
+              {initials || "?"}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-white">Dr. Afsana Rahman</p>
-              <p className="truncate text-xs text-white/70">Dhaka North Maternal Clinic</p>
+              <p className="truncate text-sm font-medium text-white">{displayName}</p>
+              <p className="truncate text-xs text-white/70">{user?.role ?? "Not signed in"}</p>
             </div>
           </div>
-          <Button variant="ghost" className="w-full justify-start text-white/80 hover:bg-white/10 hover:text-white">
+          <Button
+            variant="ghost"
+            onClick={handleSignOut}
+            className="w-full justify-start text-white/80 hover:bg-white/10 hover:text-white"
+          >
             <LogOut className="h-4 w-4" />
             Sign out
           </Button>
