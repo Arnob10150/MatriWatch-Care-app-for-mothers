@@ -15,8 +15,12 @@ const mono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "MatriWatch Clinic Dashboard",
-  description: "Real-time maternal health risk monitoring for clinics and community health workers."
+  title: {
+    default: "MatriWatch — Maternal Health Monitoring",
+    template: "%s | MatriWatch",
+  },
+  description:
+    "AI-powered maternal health monitoring platform for clinics worldwide. Track pregnancies, screen for postnatal depression, and prevent maternal mortality.",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

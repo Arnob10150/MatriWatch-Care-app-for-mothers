@@ -8,10 +8,12 @@ import dashboardRouter from "./dashboard";
 import riskRouter from "./risk";
 import staffRouter from "./staff";
 import clinicsRouter from "./clinics";
+import authRouter from "./auth";
 
 const router: IRouter = Router();
 
 router.use(healthRouter);
+router.use(authRouter);
 router.use(mothersRouter);
 router.use(checkinsRouter);
 router.use(alertsRouter);

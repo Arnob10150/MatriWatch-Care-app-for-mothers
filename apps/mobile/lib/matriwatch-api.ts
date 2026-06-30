@@ -52,6 +52,40 @@ export async function findMotherByName(name: string): Promise<ApiMother | null> 
   }
 }
 
+export async function fetchMother(id: string): Promise<ApiMother | null> {
+  if (!apiBase) return null;
+  try {
+    const response = await fetch(`${apiBase}/mothers/${id}`);
+    if (!response.ok) return null;
+    return (await response.json()) as ApiMother;
+  } catch {
+    return null;
+  }
+}
+
+export async function updateMother(
+  id: string,
+  updates: Partial<Pick<ApiMother, "name" | "age" | "gestational_age" | "due_date">>
+): Promise<ApiMother | null> {
+  if (!apiBase) return null;
+  try {
+    const response = await fetch(`${apiBase}/mothers/${id}`, {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        name: updates.name,
+        age: updates.age,
+        gestational_age: updates.gestational_age,
+        due_date: updates.due_date,
+      }),
+    });
+    if (!response.ok) return null;
+    return (await response.json()) as ApiMother;
+  } catch {
+    return null;
+  }
+}
+
 export async function scoreCheckIn(input: CheckInInput): Promise<SubmitResult<RiskResult>> {
   if (mlBase) {
     const result = await postJson<RiskResult>(`${mlBase}/score/checkin`, input);

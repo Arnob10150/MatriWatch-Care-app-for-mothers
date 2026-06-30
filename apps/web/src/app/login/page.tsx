@@ -2,7 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Heart, ShieldCheck, Stethoscope, Users } from "lucide-react";
+import Link from "next/link";
+import { Heart, ShieldCheck, Stethoscope, Users, Eye, EyeOff, AlertCircle } from "lucide-react";
+
+const API_BASE = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api").replace(/\/$/, "");
 
 const ROLES = [
   {
@@ -61,6 +64,7 @@ export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [role, setRole] = useState<RoleId>("Doctor");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -76,19 +80,34 @@ export default function LoginPage() {
     setError("");
     setLoading(true);
     try {
-      await new Promise((r) => setTimeout(r, 400));
-      const name = email
-        .split("@")[0]
-        .replace(/[._-]/g, " ")
-        .replace(/\b\w/g, (c) => c.toUpperCase());
-      try {
-        localStorage.setItem("matriwatch_auth", JSON.stringify({ email, name, role }));
-      } catch {
-        // Storage may be unavailable (private mode, sandboxed preview, etc.) - non-fatal.
+      const res = await fetch(`${API_BASE}/auth/login`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ email: email.trim(), password }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error ?? "Invalid email or password.");
+        return;
       }
-      router.push(selectedRole.redirect);
-    } catch (err) {
-      setError("Something went wrong signing in. Please try again.");
+
+      const authRole = data.role as RoleId;
+      const matchedRole = ROLES.find((r) => r.id === authRole) ?? selectedRole;
+
+      try {
+        localStorage.setItem(
+          "matriwatch_auth",
+          JSON.stringify({ email: data.email, name: data.name, role: authRole })
+        );
+      } catch {
+        // Storage may be unavailable — non-fatal.
+      }
+
+      router.push(matchedRole.redirect);
+    } catch {
+      setError("Could not reach the server. Make sure the API is running.");
     } finally {
       setLoading(false);
     }
@@ -207,24 +226,35 @@ export default function LoginPage() {
               >
                 Password
               </label>
-              <input
-                id="password"
-                type="password"
-                autoComplete="current-password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                className="w-full rounded-xl border px-3.5 py-2.5 text-sm outline-none transition-all"
-                style={{ borderColor: "#EDE8E3", color: "#2D2D2D", backgroundColor: "#FFFFFF" }}
-                onFocus={(e) => (e.target.style.borderColor = "#F9B8C4")}
-                onBlur={(e) => (e.target.style.borderColor = "#EDE8E3")}
-              />
+              <div className="relative">
+                <input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full rounded-xl border px-3.5 py-2.5 pr-10 text-sm outline-none transition-all"
+                  style={{ borderColor: "#EDE8E3", color: "#2D2D2D", backgroundColor: "#FFFFFF" }}
+                  onFocus={(e) => (e.target.style.borderColor = "#F9B8C4")}
+                  onBlur={(e) => (e.target.style.borderColor = "#EDE8E3")}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2"
+                  style={{ color: "#AEAEB8" }}
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
             </div>
 
             {error && (
-              <p className="text-xs" style={{ color: "#C94F6D" }}>
-                {error}
-              </p>
+              <div className="flex items-start gap-2 rounded-lg p-3" style={{ backgroundColor: "#FFF3F6", border: "1px solid #F9B8C4" }}>
+                <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: "#C94F6D" }} />
+                <p className="text-xs" style={{ color: "#C94F6D" }}>{error}</p>
+              </div>
             )}
 
             <button
@@ -238,7 +268,10 @@ export default function LoginPage() {
           </form>
 
           <p className="mt-5 text-center text-xs" style={{ color: "#7A7A8A" }}>
-            Demo — enter any credentials to continue
+            Don&apos;t have an account?{" "}
+            <Link href="/register" className="font-semibold" style={{ color: "#C97C8A" }}>
+              Register
+            </Link>
           </p>
         </div>
       </div>

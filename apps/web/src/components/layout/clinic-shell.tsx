@@ -26,7 +26,7 @@ const links = [
   { href: "/settings", label: "Settings", icon: Settings },
 ] as const;
 
-const adminLink = { href: "/admin", label: "Admin", icon: ShieldCheck } as const;
+const adminLink = { href: "/admin", label: "Manage Account", icon: ShieldCheck } as const;
 
 export function ClinicShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
