@@ -57,7 +57,7 @@ export default function CheckInTabScreen() {
     setSubmitStatus(null);
     const response = await submitCheckIn(checkIn);
     setSubmittedRisk(response.result);
-    setSubmitStatus(response.saved ? "Saved and sent to your clinic." : `AI scored via ${response.source}. Add Supabase env vars to persist.`);
+    setSubmitStatus(response.saved ? "Saved and sent to your clinic." : `AI scored via ${response.source}. Set EXPO_PUBLIC_MOTHER_ID and EXPO_PUBLIC_MATRIWATCH_API_URL to save this to your clinic record.`);
     setIsSubmitting(false);
   }
 

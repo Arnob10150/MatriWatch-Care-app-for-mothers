@@ -8,11 +8,7 @@ const config: ExpoConfig = {
   orientation: "portrait",
   userInterfaceStyle: "automatic",
   platforms: ["android", "ios"],
-  plugins: ["expo-router", "expo-notifications"],
-  extra: {
-    supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL,
-    supabaseAnonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY
-  }
+  plugins: ["expo-router", "expo-notifications"]
 };
 
 export default config;

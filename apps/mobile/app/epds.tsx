@@ -27,7 +27,7 @@ export default function EpdsScreen() {
     setSubmitStatus(null);
     const response = await submitEpds(responses);
     setSubmittedResult(response.result);
-    setSubmitStatus(response.saved ? "Saved and shared with your clinic." : `AI scored via ${response.source}. Add Supabase env vars to persist.`);
+    setSubmitStatus(response.saved ? "Saved and shared with your clinic." : `AI scored via ${response.source}. Set EXPO_PUBLIC_MOTHER_ID and EXPO_PUBLIC_MATRIWATCH_API_URL to save this to your clinic record.`);
     setIsSubmitting(false);
   }
 
