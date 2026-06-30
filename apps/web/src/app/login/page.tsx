@@ -2,9 +2,21 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Heart, Stethoscope, Users } from "lucide-react";
+import { Heart, ShieldCheck, Stethoscope, Users } from "lucide-react";
 
 const ROLES = [
+  {
+    id: "Admin",
+    label: "Admin",
+    description: "Clinic administrator",
+    icon: ShieldCheck,
+    iconColor: "#7A5A92",
+    iconBg: "#F3ECF9",
+    activeBorder: "#7A5A92",
+    activeBg: "#F3ECF9",
+    buttonColor: "#7A5A92",
+    redirect: "/admin",
+  },
   {
     id: "Doctor",
     label: "Doctor",
@@ -113,7 +125,7 @@ export default function LoginPage() {
             <p className="mb-2.5 text-xs font-medium" style={{ color: "#2D2D2D" }}>
               I am a…
             </p>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 gap-2">
               {ROLES.map((r) => {
                 const Icon = r.icon;
                 const active = role === r.id;
@@ -176,6 +188,8 @@ export default function LoginPage() {
                     ? "fatima@matriwatch.app"
                     : role === "Nurse"
                     ? "kamrun@clinic.app"
+                    : role === "Admin"
+                    ? "admin@matriwatch.app"
                     : "dr.rahim@dhakaclinic.app"
                 }
                 className="w-full rounded-xl border px-3.5 py-2.5 text-sm outline-none transition-all"

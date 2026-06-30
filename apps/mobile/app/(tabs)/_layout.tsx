@@ -1,6 +1,9 @@
 import type { ComponentType } from "react";
-import { Tabs } from "expo-router";
+import { useEffect, useState } from "react";
+import { Redirect, Tabs } from "expo-router";
+import { ActivityIndicator, SafeAreaView } from "react-native";
 import { ClipboardList, Clock3, Home, UserRound } from "lucide-react-native";
+import { getAuth } from "@/lib/auth";
 
 type TabIcon = ComponentType<{ color: string; size: number }>;
 
@@ -10,6 +13,28 @@ const Clock3Icon = Clock3 as TabIcon;
 const UserRoundIcon = UserRound as TabIcon;
 
 export default function TabsLayout() {
+  const [checkedAuth, setCheckedAuth] = useState(false);
+  const [authed, setAuthed] = useState(false);
+
+  useEffect(() => {
+    getAuth().then((auth) => {
+      setAuthed(Boolean(auth));
+      setCheckedAuth(true);
+    });
+  }, []);
+
+  if (!checkedAuth) {
+    return (
+      <SafeAreaView className="flex-1 items-center justify-center bg-surface">
+        <ActivityIndicator color="#C97C8A" />
+      </SafeAreaView>
+    );
+  }
+
+  if (!authed) {
+    return <Redirect href="/login" />;
+  }
+
   return (
     <Tabs
       screenOptions={{

@@ -191,4 +191,21 @@ router.patch("/mothers/:id", async (req, res): Promise<void> => {
   }
 });
 
+router.delete("/mothers/:id", async (req, res): Promise<void> => {
+  try {
+    const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    const [deleted] = await db.delete(mothersTable).where(eq(mothersTable.id, raw)).returning();
+
+    if (!deleted) {
+      res.status(404).json({ error: "Mother not found" });
+      return;
+    }
+
+    res.status(204).end();
+  } catch (err) {
+    req.log.error({ err }, "Failed to delete mother");
+    sendServerError(res, err);
+  }
+});
+
 export default router;

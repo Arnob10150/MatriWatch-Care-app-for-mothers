@@ -11,6 +11,7 @@ import {
   LogOut,
   Settings,
   ShieldAlert,
+  ShieldCheck,
   Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -24,6 +25,8 @@ const links = [
   { href: "/reports", label: "Reports", icon: LineChart },
   { href: "/settings", label: "Settings", icon: Settings },
 ] as const;
+
+const adminLink = { href: "/admin", label: "Admin", icon: ShieldCheck } as const;
 
 export function ClinicShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
@@ -93,6 +96,24 @@ export function ClinicShell({ children }: { children: ReactNode }) {
               </Link>
             );
           })}
+
+          {user?.role === "Admin" && (
+            <>
+              <p className="px-4 py-2 text-xs font-semibold uppercase tracking-wider text-white/60">Manage</p>
+              <Link
+                href={adminLink.href}
+                className={cn(
+                  "flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors",
+                  pathname.startsWith(adminLink.href)
+                    ? "bg-white text-primary"
+                    : "text-white/80 hover:bg-white/10 hover:text-white"
+                )}
+              >
+                <adminLink.icon className="h-5 w-5" />
+                {adminLink.label}
+              </Link>
+            </>
+          )}
         </nav>
 
         <div className="border-t border-white/20 p-4">

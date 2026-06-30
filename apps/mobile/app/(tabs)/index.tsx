@@ -1,8 +1,10 @@
+import { useEffect, useState } from "react";
 import { Link } from "expo-router";
 import { Text, TouchableOpacity, View } from "react-native";
 import { patientSummaries } from "@matriwatch/shared";
 import { RiskPill } from "@/components/risk-pill";
 import { Screen } from "@/components/screen";
+import { getAuth } from "@/lib/auth";
 
 const mother = patientSummaries[0];
 
@@ -20,11 +22,18 @@ const riskMessages = {
 
 export default function MotherHomeScreen() {
   const today = new Date().toLocaleDateString("en-BD", { weekday: "long", month: "long", day: "numeric" });
+  const [firstName, setFirstName] = useState("there");
+
+  useEffect(() => {
+    getAuth().then((auth) => {
+      if (auth?.name) setFirstName(auth.name.split(" ")[0]);
+    });
+  }, []);
 
   return (
     <Screen>
       <View className="rounded-2xl border border-border bg-card p-5 shadow-sm">
-        <Text className="text-2xl font-bold text-ink">Good morning, Fatima</Text>
+        <Text className="text-2xl font-bold text-ink">Good morning, {firstName}</Text>
         <Text className="mt-1 text-sm text-mutedText">{today}</Text>
       </View>
 

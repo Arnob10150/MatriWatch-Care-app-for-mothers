@@ -1,19 +1,42 @@
+import { useEffect, useState } from "react";
+import { useRouter } from "expo-router";
 import { Text, TouchableOpacity, View } from "react-native";
 import { patientSummaries } from "@matriwatch/shared";
 import { Screen } from "@/components/screen";
+import { clearAuth, getAuth, type MotherAuth } from "@/lib/auth";
 
 const mother = patientSummaries[0];
 
 export default function ProfileScreen() {
+  const router = useRouter();
+  const [auth, setAuthState] = useState<MotherAuth | null>(null);
+
+  useEffect(() => {
+    getAuth().then(setAuthState);
+  }, []);
+
+  async function handleSignOut() {
+    await clearAuth();
+    router.replace("/login");
+  }
+
+  const displayName = auth?.name ?? "Guest";
+  const initials = displayName
+    .split(" ")
+    .map((part) => part[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+
   return (
     <Screen>
       <View className="rounded-2xl border border-border bg-card p-5">
         <View className="flex-row items-center gap-4">
           <View className="h-16 w-16 items-center justify-center rounded-full bg-primary">
-            <Text className="text-xl font-bold text-white">FA</Text>
+            <Text className="text-xl font-bold text-white">{initials || "?"}</Text>
           </View>
           <View className="flex-1">
-            <Text className="text-xl font-bold text-ink">Fatima Begum</Text>
+            <Text className="text-xl font-bold text-ink">{displayName}</Text>
             <Text className="mt-1 text-sm text-mutedText">{mother.age} years old, {mother.gestationalAgeWeeks} weeks pregnant</Text>
           </View>
         </View>
@@ -25,7 +48,7 @@ export default function ProfileScreen() {
           </View>
           <View className="flex-row justify-between border-b border-border pb-3">
             <Text className="text-mutedText">Countdown</Text>
-            <Text className="rounded-full bg-peach px-3 py-1 font-semibold text-ink">28 days to due date</Text>
+            <Text className="rounded-full bg-peach/50 px-3 py-1 font-semibold text-ink">28 days to due date</Text>
           </View>
           <View className="flex-row justify-between">
             <Text className="text-mutedText">Assigned clinic</Text>
@@ -38,7 +61,7 @@ export default function ProfileScreen() {
         <Text className="font-semibold text-primary">Edit Details</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity className="min-h-12 items-center justify-center p-4">
+      <TouchableOpacity onPress={handleSignOut} className="min-h-12 items-center justify-center p-4">
         <Text className="font-semibold text-mutedText">Sign Out</Text>
       </TouchableOpacity>
     </Screen>

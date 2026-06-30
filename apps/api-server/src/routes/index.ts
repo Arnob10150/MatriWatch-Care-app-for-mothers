@@ -6,6 +6,8 @@ import alertsRouter from "./alerts";
 import epdsRouter from "./epds";
 import dashboardRouter from "./dashboard";
 import riskRouter from "./risk";
+import staffRouter from "./staff";
+import clinicsRouter from "./clinics";
 
 const router: IRouter = Router();
 
@@ -16,5 +18,7 @@ router.use(alertsRouter);
 router.use(epdsRouter);
 router.use(dashboardRouter);
 router.use(riskRouter);
+router.use(staffRouter);
+router.use(clinicsRouter);
 
 export default router;
