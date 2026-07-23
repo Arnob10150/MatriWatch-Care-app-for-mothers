@@ -1,3 +1,6 @@
+// The Vercel entrypoint loads the built Express app after `pnpm run build`.
+// TypeScript checks this source file before that generated .mjs has types.
+// @ts-expect-error generated build artifact
 import app from "../dist/app.mjs";
 
 /**

@@ -1,5 +1,5 @@
-import { db, pool } from "./index.ts";
-import { clinicsTable, mothersTable, checkinsTable, alertsTable } from "./schema/index.ts";
+import { db, pool } from "./index";
+import { clinicsTable, mothersTable, checkinsTable, alertsTable } from "./schema/index";
 
 async function seed() {
   const [clinic] = await db

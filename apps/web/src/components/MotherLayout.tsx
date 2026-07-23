@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Home, ClipboardList, Clock, MessageCircle, LogOut, Heart } from "lucide-react";
 import { clearAuth, getAuth, type AuthUser } from "@/lib/auth";
+import { MotherChatbot } from "@/components/MotherChatbot";
 import { playTap } from "@/lib/sounds";
 
 interface MotherLayoutProps {
@@ -149,6 +150,7 @@ export function MotherLayout({ children, title }: MotherLayoutProps) {
             );
           })}
         </nav>
+        <MotherChatbot />
       </div>
     </div>
   );

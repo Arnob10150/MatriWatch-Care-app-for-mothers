@@ -4,6 +4,7 @@ import { Redirect, Tabs } from "expo-router";
 import { ActivityIndicator, SafeAreaView } from "react-native";
 import { ClipboardList, Clock3, Home, UserRound } from "lucide-react-native";
 import { getAuth } from "@/lib/auth";
+import { MotherChatbot } from "@/components/mother-chatbot";
 
 type TabIcon = ComponentType<{ color: string; size: number }>;
 
@@ -36,25 +37,28 @@ export default function TabsLayout() {
   }
 
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: "#C97C8A",
-        tabBarInactiveTintColor: "#7A7A8A",
-        tabBarStyle: {
-          backgroundColor: "#FFFFFF",
-          borderTopColor: "#EDE8E3",
-          minHeight: 70,
-          paddingBottom: 10,
-          paddingTop: 8
-        },
-        tabBarLabelStyle: { fontSize: 12, fontWeight: "600" }
-      }}
-    >
-      <Tabs.Screen name="index" options={{ title: "Home", tabBarIcon: ({ color, size }) => <HomeIcon color={color} size={size} /> }} />
-      <Tabs.Screen name="check-in" options={{ title: "Check-in", tabBarIcon: ({ color, size }) => <ClipboardListIcon color={color} size={size} /> }} />
-      <Tabs.Screen name="history" options={{ title: "History", tabBarIcon: ({ color, size }) => <Clock3Icon color={color} size={size} /> }} />
-      <Tabs.Screen name="profile" options={{ title: "Profile", tabBarIcon: ({ color, size }) => <UserRoundIcon color={color} size={size} /> }} />
-    </Tabs>
+    <>
+      <Tabs
+        screenOptions={{
+          headerShown: false,
+          tabBarActiveTintColor: "#C97C8A",
+          tabBarInactiveTintColor: "#7A7A8A",
+          tabBarStyle: {
+            backgroundColor: "#FFFFFF",
+            borderTopColor: "#EDE8E3",
+            minHeight: 70,
+            paddingBottom: 10,
+            paddingTop: 8
+          },
+          tabBarLabelStyle: { fontSize: 12, fontWeight: "600" }
+        }}
+      >
+        <Tabs.Screen name="index" options={{ title: "Home", tabBarIcon: ({ color, size }) => <HomeIcon color={color} size={size} /> }} />
+        <Tabs.Screen name="check-in" options={{ title: "Check-in", tabBarIcon: ({ color, size }) => <ClipboardListIcon color={color} size={size} /> }} />
+        <Tabs.Screen name="history" options={{ title: "History", tabBarIcon: ({ color, size }) => <Clock3Icon color={color} size={size} /> }} />
+        <Tabs.Screen name="profile" options={{ title: "Profile", tabBarIcon: ({ color, size }) => <UserRoundIcon color={color} size={size} /> }} />
+      </Tabs>
+      <MotherChatbot />
+    </>
   );
 }
