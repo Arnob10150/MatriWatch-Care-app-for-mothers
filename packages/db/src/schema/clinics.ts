@@ -1,6 +1,6 @@
 import { pgTable, text, uuid, timestamp } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
+import { insertSchemaFor } from "./_insert-schema";
 
 export const clinicsTable = pgTable("clinics", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -10,6 +10,6 @@ export const clinicsTable = pgTable("clinics", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
-export const insertClinicSchema = createInsertSchema(clinicsTable).omit({ id: true, createdAt: true });
+export const insertClinicSchema = insertSchemaFor(clinicsTable);
 export type InsertClinic = z.infer<typeof insertClinicSchema>;
 export type Clinic = typeof clinicsTable.$inferSelect;

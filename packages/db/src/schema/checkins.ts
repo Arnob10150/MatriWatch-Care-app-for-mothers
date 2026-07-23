@@ -1,6 +1,6 @@
 import { pgTable, uuid, integer, real, text, timestamp, pgEnum } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
+import { insertSchemaFor } from "./_insert-schema";
 import { mothersTable } from "./mothers";
 
 export const riskLevelEnum = pgEnum("risk_level", ["low", "mid", "high"]);
@@ -20,6 +20,6 @@ export const checkinsTable = pgTable("checkins", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
-export const insertCheckinSchema = createInsertSchema(checkinsTable).omit({ id: true, createdAt: true });
+export const insertCheckinSchema = insertSchemaFor(checkinsTable);
 export type InsertCheckin = z.infer<typeof insertCheckinSchema>;
 export type Checkin = typeof checkinsTable.$inferSelect;
