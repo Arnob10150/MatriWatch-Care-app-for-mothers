@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "dist/index.mjs": {
+      "runtime": "nodejs20.x"
+    }
+  }
+}
