@@ -1,5 +1,9 @@
 import express from "express";
-import pinoHttp = require("pino-http");
+import * as pinoHttpModule from "pino-http";
+
+const pinoHttp = (pinoHttpModule as unknown as { default?: Function }).default
+  ? (pinoHttpModule as unknown as { default: (...args: any[]) => any }).default
+  : (pinoHttpModule as unknown as (...args: any[]) => any);
 
 const app = express();
 
