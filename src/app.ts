@@ -1,5 +1,5 @@
 import express from "express";
-import pinoHttp from "pino-http";
+import pinoHttp = require("pino-http");
 
 const app = express();
 
