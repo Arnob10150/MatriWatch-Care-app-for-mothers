@@ -21,3 +21,4 @@ venv/
 *.log
 datasets/raw/**
 !datasets/raw/.gitkeep
+.vercel
