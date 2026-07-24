@@ -3,9 +3,12 @@
 import Link from "next/link";
 import { Heart } from "lucide-react";
 import { useState } from "react";
+import { LanguageToggle } from "@/components/LanguageToggle";
+import { useLanguage } from "@/components/LanguageProvider";
 
 export function LandingNavbar() {
   const [loginHover, setLoginHover] = useState(false);
+  const { t } = useLanguage();
 
   return (
     <nav
@@ -38,8 +41,9 @@ export function LandingNavbar() {
           </div>
         </Link>
 
-        {/* Right: Login + Register */}
+        {/* Right: Language + Login + Register */}
         <div className="flex items-center gap-3">
+          <LanguageToggle />
           <Link
             href="/login"
             className="px-4 py-2 text-sm font-semibold rounded-xl border transition-colors"
@@ -51,14 +55,14 @@ export function LandingNavbar() {
             onMouseEnter={() => setLoginHover(true)}
             onMouseLeave={() => setLoginHover(false)}
           >
-            Login
+            {t("landing.nav.login")}
           </Link>
           <Link
             href="/register"
             className="px-4 py-2 text-sm font-semibold text-white rounded-xl transition-colors"
             style={{ backgroundColor: "#C97C8A" }}
           >
-            Register
+            {t("landing.nav.register")}
           </Link>
         </div>
       </div>

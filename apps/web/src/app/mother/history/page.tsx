@@ -5,15 +5,21 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useListMothers, useListCheckins, getListCheckinsQueryKey } from "@/lib/mother-api";
 import { getAuth } from "@/lib/auth";
 import { format } from "date-fns";
+import { useLanguage } from "@/components/LanguageProvider";
 
-const RISK_COLORS = {
-  low: { bg: "#F0F7ED", text: "#87A878", dot: "#87A878", label: "Low" },
-  mid: { bg: "#FDF3E7", text: "#D4914A", dot: "#D4914A", label: "Mid" },
-  high: { bg: "#FCE8EE", text: "#C94F6D", dot: "#C94F6D", label: "High" },
-};
+function useRiskColors() {
+  const { t } = useLanguage();
+  return {
+    low: { bg: "#F0F7ED", text: "#87A878", dot: "#87A878", label: t("risk.low") },
+    mid: { bg: "#FDF3E7", text: "#D4914A", dot: "#D4914A", label: t("risk.mid") },
+    high: { bg: "#FCE8EE", text: "#C94F6D", dot: "#C94F6D", label: t("risk.high") },
+  };
+}
 
 export default function HistoryPage() {
   const user = getAuth();
+  const { t } = useLanguage();
+  const RISK_COLORS = useRiskColors();
   const { data: allMothers } = useListMothers({});
   const mother = allMothers?.find((m) =>
     m.name.toLowerCase().includes(user?.name?.split(" ")[0]?.toLowerCase() ?? "__no_match__")
@@ -25,10 +31,10 @@ export default function HistoryPage() {
   );
 
   return (
-    <MotherLayout title="My History">
+    <MotherLayout title={t("history.title")}>
       <div className="px-5 py-6 space-y-4">
         <p className="text-sm" style={{ color: "#7A7A8A" }}>
-          Your last {checkins?.length ?? 0} check-ins
+          {t("history.lastCheckins", { count: checkins?.length ?? 0 })}
         </p>
 
         {isLoading
@@ -56,13 +62,13 @@ export default function HistoryPage() {
                       className="text-xs font-medium px-2.5 py-1 rounded-full"
                       style={{ backgroundColor: colors.bg, color: colors.text }}
                     >
-                      {colors.label} Risk
+                      {t("history.riskSuffix", { level: colors.label })}
                     </span>
                   </div>
 
                   <div className="grid grid-cols-3 gap-2">
                     <Stat
-                      label="BP"
+                      label={t("history.bp")}
                       value={
                         c.bp_systolic != null && c.bp_diastolic != null
                           ? `${c.bp_systolic}/${c.bp_diastolic}`
@@ -70,8 +76,8 @@ export default function HistoryPage() {
                       }
                       unit="mmHg"
                     />
-                    <Stat label="Sugar" value={c.blood_sugar?.toFixed(1) ?? "—"} unit="mmol/L" />
-                    <Stat label="Temp" value={c.body_temp?.toFixed(1) ?? "—"} unit="°C" />
+                    <Stat label={t("history.sugar")} value={c.blood_sugar?.toFixed(1) ?? "—"} unit="mmol/L" />
+                    <Stat label={t("history.temp")} value={c.body_temp?.toFixed(1) ?? "—"} unit="°C" />
                   </div>
 
                   {c.symptoms && c.symptoms.length > 0 && (
@@ -94,9 +100,9 @@ export default function HistoryPage() {
         {!isLoading && !checkins?.length && (
           <div className="flex flex-col items-center py-16 text-center">
             <p className="text-4xl mb-3">📋</p>
-            <p className="font-semibold" style={{ color: "#2D2D2D" }}>No check-ins yet</p>
+            <p className="font-semibold" style={{ color: "#2D2D2D" }}>{t("history.noCheckinsYet")}</p>
             <p className="text-sm mt-1" style={{ color: "#7A7A8A" }}>
-              Start your first check-in today to track your health journey.
+              {t("history.startFirst")}
             </p>
           </div>
         )}

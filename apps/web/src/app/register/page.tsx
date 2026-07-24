@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Heart, ShieldCheck, Stethoscope, Users, CheckCircle2, AlertCircle, Eye, EyeOff } from "lucide-react";
+import { LanguageToggle } from "@/components/LanguageToggle";
+import { useLanguage } from "@/components/LanguageProvider";
 
 const API_BASE = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api").replace(/\/$/, "");
 
@@ -62,6 +64,7 @@ type RoleId = (typeof ROLES)[number]["id"];
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { t } = useLanguage();
   const [role, setRole] = useState<RoleId>("Doctor");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -89,19 +92,19 @@ export default function RegisterPage() {
     setError("");
 
     if (!name.trim() || !email.trim()) {
-      setError("Please enter your full name and email.");
+      setError(t("register.missingFields"));
       return;
     }
     if (password.length < 6) {
-      setError("Password must be at least 6 characters.");
+      setError(t("register.passwordTooShort"));
       return;
     }
     if (password !== confirmPassword) {
-      setError("Passwords do not match.");
+      setError(t("register.passwordMismatchError"));
       return;
     }
     if (role === "Mother" && !age) {
-      setError("Please enter your age.");
+      setError(t("register.ageRequired"));
       return;
     }
 
@@ -128,7 +131,7 @@ export default function RegisterPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error ?? "Registration failed. Please try again.");
+        setError(data.error ?? t("register.failed"));
         return;
       }
 
@@ -144,7 +147,7 @@ export default function RegisterPage() {
       setSuccess(true);
       setTimeout(() => router.push(selectedRole.redirect), 1500);
     } catch {
-      setError("Could not reach the server. Make sure the API is running.");
+      setError(t("register.serverUnreachable"));
     } finally {
       setLoading(false);
     }
@@ -156,9 +159,9 @@ export default function RegisterPage() {
         <div className="w-full max-w-sm text-center">
           <div className="rounded-2xl bg-white p-10" style={{ boxShadow: "0 4px 24px rgba(201,124,138,0.12)" }}>
             <CheckCircle2 className="w-14 h-14 mx-auto mb-4" style={{ color: "#87A878" }} />
-            <h2 className="text-xl font-bold mb-2" style={{ color: "#2D2D2D" }}>Account Created!</h2>
+            <h2 className="text-xl font-bold mb-2" style={{ color: "#2D2D2D" }}>{t("register.success.title")}</h2>
             <p className="text-sm" style={{ color: "#7A7A8A" }}>
-              Welcome, <strong>{name}</strong>. Taking you to your dashboard…
+              {t("register.success.welcome", { name })}
             </p>
           </div>
         </div>
@@ -169,6 +172,9 @@ export default function RegisterPage() {
   return (
     <main className="flex min-h-screen items-center justify-center p-4 py-10" style={{ backgroundColor: "#FFF8F0" }}>
       <div className="w-full max-w-sm">
+        <div className="mb-3 flex justify-end">
+          <LanguageToggle />
+        </div>
         <div className="rounded-2xl bg-white p-8" style={{ boxShadow: "0 4px 24px rgba(201,124,138,0.12)" }}>
 
           {/* Logo */}
@@ -176,13 +182,13 @@ export default function RegisterPage() {
             <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl" style={{ backgroundColor: "#FCE8EE" }}>
               <Heart className="h-7 w-7" style={{ color: "#C97C8A", fill: "#C97C8A" }} />
             </div>
-            <h1 className="text-2xl font-bold" style={{ color: "#C97C8A" }}>Create Account</h1>
-            <p className="mt-1 text-sm" style={{ color: "#7A7A8A" }}>Join MatriWatch to start monitoring</p>
+            <h1 className="text-2xl font-bold" style={{ color: "#C97C8A" }}>{t("register.title")}</h1>
+            <p className="mt-1 text-sm" style={{ color: "#7A7A8A" }}>{t("register.subtitle")}</p>
           </div>
 
           {/* Role selector */}
           <div className="mb-5">
-            <p className="mb-2.5 text-xs font-medium" style={{ color: "#2D2D2D" }}>I am a…</p>
+            <p className="mb-2.5 text-xs font-medium" style={{ color: "#2D2D2D" }}>{t("register.role")}</p>
             <div className="grid grid-cols-2 gap-2">
               {ROLES.map((r) => {
                 const Icon = r.icon;
@@ -218,7 +224,7 @@ export default function RegisterPage() {
 
             {/* Name */}
             <div>
-              <label className="mb-1.5 block text-xs font-medium" style={{ color: "#2D2D2D" }}>Full name</label>
+              <label className="mb-1.5 block text-xs font-medium" style={{ color: "#2D2D2D" }}>{t("register.name")}</label>
               <input
                 type="text"
                 value={name}
@@ -233,7 +239,7 @@ export default function RegisterPage() {
 
             {/* Email */}
             <div>
-              <label className="mb-1.5 block text-xs font-medium" style={{ color: "#2D2D2D" }}>Email address</label>
+              <label className="mb-1.5 block text-xs font-medium" style={{ color: "#2D2D2D" }}>{t("register.email")}</label>
               <input
                 type="email"
                 value={email}
@@ -248,13 +254,13 @@ export default function RegisterPage() {
 
             {/* Password */}
             <div>
-              <label className="mb-1.5 block text-xs font-medium" style={{ color: "#2D2D2D" }}>Password</label>
+              <label className="mb-1.5 block text-xs font-medium" style={{ color: "#2D2D2D" }}>{t("register.password")}</label>
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Min. 6 characters"
+                  placeholder={t("register.passwordHint")}
                   className="w-full rounded-xl border px-3.5 py-2.5 pr-10 text-sm outline-none transition-all"
                   style={inputStyle}
                   onFocus={(e) => (e.target.style.borderColor = "#F9B8C4")}
@@ -273,13 +279,13 @@ export default function RegisterPage() {
 
             {/* Confirm Password */}
             <div>
-              <label className="mb-1.5 block text-xs font-medium" style={{ color: "#2D2D2D" }}>Confirm password</label>
+              <label className="mb-1.5 block text-xs font-medium" style={{ color: "#2D2D2D" }}>{t("register.confirmPassword")}</label>
               <div className="relative">
                 <input
                   type={showConfirm ? "text" : "password"}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Re-enter your password"
+                  placeholder={t("register.confirmPasswordPlaceholder")}
                   className="w-full rounded-xl border px-3.5 py-2.5 pr-10 text-sm outline-none transition-all"
                   style={inputStyle}
                   onFocus={(e) => (e.target.style.borderColor = "#F9B8C4")}
@@ -297,7 +303,7 @@ export default function RegisterPage() {
               {/* Match indicator */}
               {confirmPassword.length > 0 && (
                 <p className="mt-1 text-xs" style={{ color: password === confirmPassword ? "#87A878" : "#C94F6D" }}>
-                  {password === confirmPassword ? "✓ Passwords match" : "✗ Passwords do not match"}
+                  {password === confirmPassword ? t("register.passwordsMatch") : t("register.passwordsMismatch")}
                 </p>
               )}
             </div>
@@ -308,7 +314,7 @@ export default function RegisterPage() {
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="mb-1.5 block text-xs font-medium" style={{ color: "#2D2D2D" }}>
-                      Age <span style={{ color: "#C94F6D" }}>*</span>
+                      {t("register.age")} <span style={{ color: "#C94F6D" }}>*</span>
                     </label>
                     <input
                       type="number"
@@ -324,7 +330,7 @@ export default function RegisterPage() {
                     />
                   </div>
                   <div>
-                    <label className="mb-1.5 block text-xs font-medium" style={{ color: "#2D2D2D" }}>Weeks pregnant</label>
+                    <label className="mb-1.5 block text-xs font-medium" style={{ color: "#2D2D2D" }}>{t("register.weeksPregnant")}</label>
                     <input
                       type="number"
                       min={0}
@@ -341,7 +347,7 @@ export default function RegisterPage() {
                 </div>
                 <div>
                   <label className="mb-1.5 block text-xs font-medium" style={{ color: "#2D2D2D" }}>
-                    Due date <span style={{ color: "#7A7A8A", fontWeight: 400 }}>(optional)</span>
+                    {t("register.dueDateOptional")} <span style={{ color: "#7A7A8A", fontWeight: 400 }}>{t("register.optional")}</span>
                   </label>
                   <input
                     type="date"
@@ -369,14 +375,14 @@ export default function RegisterPage() {
               className="w-full rounded-xl py-2.5 text-sm font-semibold text-white transition-all disabled:opacity-70"
               style={{ backgroundColor: selectedRole.buttonColor }}
             >
-              {loading ? "Creating account…" : `Register as ${selectedRole.label}`}
+              {loading ? t("register.submitting") : t("register.submit", { role: selectedRole.label })}
             </button>
           </form>
 
           <p className="mt-5 text-center text-xs" style={{ color: "#7A7A8A" }}>
-            Already have an account?{" "}
+            {t("register.haveAccount")}{" "}
             <Link href="/login" className="font-semibold" style={{ color: "#C97C8A" }}>
-              Sign in
+              {t("register.loginLink")}
             </Link>
           </p>
         </div>

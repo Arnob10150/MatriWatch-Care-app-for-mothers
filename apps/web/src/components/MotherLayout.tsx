@@ -6,6 +6,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { Home, ClipboardList, Clock, MessageCircle, LogOut, Heart } from "lucide-react";
 import { clearAuth, getAuth, type AuthUser } from "@/lib/auth";
 import { MotherChatbot } from "@/components/MotherChatbot";
+import { LanguageToggle } from "@/components/LanguageToggle";
+import { useLanguage } from "@/components/LanguageProvider";
 import { playTap } from "@/lib/sounds";
 
 interface MotherLayoutProps {
@@ -13,16 +15,21 @@ interface MotherLayoutProps {
   title?: string;
 }
 
-const NAV = [
-  { href: "/mother", label: "Home", icon: Home },
-  { href: "/mother/checkin", label: "Check In", icon: ClipboardList },
-  { href: "/mother/epds", label: "Mood Check", icon: MessageCircle },
-  { href: "/mother/history", label: "History", icon: Clock },
-] as const;
+function useNav() {
+  const { t } = useLanguage();
+  return [
+    { key: "home", href: "/mother", label: t("nav.home"), icon: Home },
+    { key: "checkin", href: "/mother/checkin", label: t("nav.checkin"), icon: ClipboardList },
+    { key: "mood-check", href: "/mother/epds", label: t("nav.moodCheck"), icon: MessageCircle },
+    { key: "history", href: "/mother/history", label: t("nav.history"), icon: Clock },
+  ] as const;
+}
 
 export function MotherLayout({ children, title }: MotherLayoutProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const { t } = useLanguage();
+  const NAV = useNav();
   const [user, setUser] = useState<AuthUser | null>(null);
   const [checkedAuth, setCheckedAuth] = useState(false);
 
@@ -62,10 +69,11 @@ export function MotherLayout({ children, title }: MotherLayoutProps) {
               <Heart className="h-5 w-5 text-white" fill="rgba(255,255,255,0.18)" />
             </div>
             <div>
-              <h1 className="text-lg font-bold tracking-normal">MatriWatch</h1>
-              <p className="text-xs font-medium text-white/75">My Care Plan</p>
+              <h1 className="text-lg font-bold tracking-normal">{t("layout.appName")}</h1>
+              <p className="text-xs font-medium text-white/75">{t("layout.tagline")}</p>
             </div>
           </div>
+          <LanguageToggle className="mt-4 bg-white/10" />
         </div>
 
         <nav className="flex-1 space-y-2 overflow-y-auto p-4">
@@ -74,13 +82,13 @@ export function MotherLayout({ children, title }: MotherLayoutProps) {
             const isActive = link.href === "/mother" ? pathname === "/mother" : pathname.startsWith(link.href);
             return (
               <Link
-                key={link.label}
+                key={link.key}
                 href={link.href}
                 onClick={() => { if (!isActive) playTap(); }}
                 className={`flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors ${
                   isActive ? "bg-white text-primary" : "text-white/80 hover:bg-white/10 hover:text-white"
                 }`}
-                data-testid={`nav-mother-${link.label.toLowerCase().replace(/ /g, "-")}`}
+                data-testid={`nav-mother-${link.key}`}
               >
                 <link.icon className="h-5 w-5" />
                 {link.label}
@@ -96,7 +104,7 @@ export function MotherLayout({ children, title }: MotherLayoutProps) {
             </div>
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-medium text-white">{displayName}</p>
-              <p className="truncate text-xs text-white/70">Mother</p>
+              <p className="truncate text-xs text-white/70">{t("layout.mother")}</p>
             </div>
           </div>
           <button
@@ -105,7 +113,7 @@ export function MotherLayout({ children, title }: MotherLayoutProps) {
             data-testid="button-signout"
           >
             <LogOut className="h-4 w-4" />
-            Sign out
+            {t("nav.signOut")}
           </button>
         </div>
       </aside>
@@ -115,15 +123,18 @@ export function MotherLayout({ children, title }: MotherLayoutProps) {
         <div className="flex items-center justify-between border-b border-border bg-white px-4 py-3 lg:hidden">
           <div className="flex items-center gap-2">
             <Heart className="h-5 w-5 text-primary" fill="currentColor" />
-            <span className="font-semibold">{title ?? "MatriWatch"}</span>
+            <span className="font-semibold">{title ?? t("layout.appName")}</span>
           </div>
-          <button
-            onClick={handleSignOut}
-            className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground hover:bg-muted"
-            data-testid="button-signout-mobile"
-          >
-            <LogOut className="h-4 w-4" />
-          </button>
+          <div className="flex items-center gap-2">
+            <LanguageToggle />
+            <button
+              onClick={handleSignOut}
+              className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground hover:bg-muted"
+              data-testid="button-signout-mobile"
+            >
+              <LogOut className="h-4 w-4" />
+            </button>
+          </div>
         </div>
 
         <main className="min-h-screen bg-[#FFF8F0] pb-20 lg:pb-0">
@@ -140,7 +151,7 @@ export function MotherLayout({ children, title }: MotherLayoutProps) {
                 href={link.href}
                 onClick={() => { if (!isActive) playTap(); }}
                 className="flex flex-1 flex-col items-center justify-center gap-1 py-2.5"
-                data-testid={`nav-mother-mobile-${link.label.toLowerCase().replace(/ /g, "-")}`}
+                data-testid={`nav-mother-mobile-${link.key}`}
               >
                 <link.icon className="h-5 w-5" style={{ color: isActive ? "#C97C8A" : "#AEAEB8" }} />
                 <span className="text-xs font-medium" style={{ color: isActive ? "#C97C8A" : "#AEAEB8" }}>

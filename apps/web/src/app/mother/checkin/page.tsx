@@ -8,49 +8,62 @@ import { getAuth } from "@/lib/auth";
 import { playForRisk, playTap, playButtonPress, playFormSubmit, playError } from "@/lib/sounds";
 import { useQueryClient } from "@tanstack/react-query";
 import { getListMothersQueryKey, getListCheckinsQueryKey } from "@/lib/mother-api";
+import { useLanguage } from "@/components/LanguageProvider";
 
-const SYMPTOMS = [
-  "Headache", "Dizziness", "Swollen feet", "Blurred vision",
-  "Nausea", "Chest pain", "Shortness of breath", "Fever",
-  "Abdominal pain", "Decreased fetal movement",
-];
+const SYMPTOM_KEYS = [
+  { value: "Headache", key: "checkin.symptom.headache" },
+  { value: "Dizziness", key: "checkin.symptom.dizziness" },
+  { value: "Swollen feet", key: "checkin.symptom.swollenFeet" },
+  { value: "Blurred vision", key: "checkin.symptom.blurredVision" },
+  { value: "Nausea", key: "checkin.symptom.nausea" },
+  { value: "Chest pain", key: "checkin.symptom.chestPain" },
+  { value: "Shortness of breath", key: "checkin.symptom.shortnessOfBreath" },
+  { value: "Fever", key: "checkin.symptom.fever" },
+  { value: "Abdominal pain", key: "checkin.symptom.abdominalPain" },
+  { value: "Decreased fetal movement", key: "checkin.symptom.decreasedFetalMovement" },
+] as const;
 
 type Step = "vitals" | "symptoms" | "result";
 
-const RISK_RESULT = {
-  low: {
-    bg: "#F0F7ED",
-    border: "#C6DFC0",
-    titleColor: "#87A878",
-    title: "You're doing well",
-    message: "Your readings are in the healthy range. Keep up the great work and continue checking in daily.",
-    icon: "✓",
-    iconBg: "#87A878",
-  },
-  mid: {
-    bg: "#FDF3E7",
-    border: "#F0CCA4",
-    titleColor: "#D4914A",
-    title: "Keep a close watch",
-    message: "Some of your readings are slightly elevated. Monitor how you feel and contact your clinic if symptoms worsen.",
-    icon: "!",
-    iconBg: "#D4914A",
-  },
-  high: {
-    bg: "#FCE8EE",
-    border: "#F0ABBE",
-    titleColor: "#C94F6D",
-    title: "Please contact your clinic today",
-    message: "Your readings show warning signs that need medical attention. Call your clinic or visit in person as soon as possible.",
-    icon: "!",
-    iconBg: "#C94F6D",
-  },
-};
+function useRiskResult() {
+  const { t } = useLanguage();
+  return {
+    low: {
+      bg: "#F0F7ED",
+      border: "#C6DFC0",
+      titleColor: "#87A878",
+      title: t("checkin.result.low.title"),
+      message: t("checkin.result.low.message"),
+      icon: "✓",
+      iconBg: "#87A878",
+    },
+    mid: {
+      bg: "#FDF3E7",
+      border: "#F0CCA4",
+      titleColor: "#D4914A",
+      title: t("checkin.result.mid.title"),
+      message: t("checkin.result.mid.message"),
+      icon: "!",
+      iconBg: "#D4914A",
+    },
+    high: {
+      bg: "#FCE8EE",
+      border: "#F0ABBE",
+      titleColor: "#C94F6D",
+      title: t("checkin.result.high.title"),
+      message: t("checkin.result.high.message"),
+      icon: "!",
+      iconBg: "#C94F6D",
+    },
+  };
+}
 
 export default function CheckinPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const user = getAuth();
+  const { t } = useLanguage();
+  const RISK_RESULT = useRiskResult();
 
   const { data: allMothers, isError: mothersErrored, error: mothersError } = useListMothers({});
   const mother = allMothers?.find((m) =>
@@ -81,11 +94,12 @@ export default function CheckinPage() {
 
   function validateVitals() {
     const e: Record<string, string> = {};
-    if (!vitals.bp_systolic || isNaN(+vitals.bp_systolic)) e.bp_systolic = "Required";
-    if (!vitals.bp_diastolic || isNaN(+vitals.bp_diastolic)) e.bp_diastolic = "Required";
-    if (!vitals.blood_sugar || isNaN(+vitals.blood_sugar)) e.blood_sugar = "Required";
-    if (!vitals.body_temp || isNaN(+vitals.body_temp)) e.body_temp = "Required";
-    if (!vitals.heart_rate || isNaN(+vitals.heart_rate)) e.heart_rate = "Required";
+    const required = t("checkin.required");
+    if (!vitals.bp_systolic || isNaN(+vitals.bp_systolic)) e.bp_systolic = required;
+    if (!vitals.bp_diastolic || isNaN(+vitals.bp_diastolic)) e.bp_diastolic = required;
+    if (!vitals.blood_sugar || isNaN(+vitals.blood_sugar)) e.blood_sugar = required;
+    if (!vitals.body_temp || isNaN(+vitals.body_temp)) e.body_temp = required;
+    if (!vitals.heart_rate || isNaN(+vitals.heart_rate)) e.heart_rate = required;
     setErrors(e);
     if (Object.keys(e).length > 0) playError();
     return Object.keys(e).length === 0;
@@ -101,7 +115,7 @@ export default function CheckinPage() {
   async function handleSubmit() {
     setSubmitError(null);
     if (!mother) {
-      setSubmitError("No mother record found for your account yet. Please contact your clinic.");
+      setSubmitError(t("checkin.noMotherRecord"));
       playError();
       return;
     }
@@ -133,7 +147,7 @@ export default function CheckinPage() {
         onError: (err) => {
           playError();
           setSubmitting(false);
-          setSubmitError(err instanceof Error ? err.message : "Failed to submit your check-in. Please try again.");
+          setSubmitError(err instanceof Error ? err.message : t("checkin.submitFailed"));
         },
       }
     );
@@ -142,17 +156,17 @@ export default function CheckinPage() {
   const result = RISK_RESULT[resultLevel as keyof typeof RISK_RESULT] ?? RISK_RESULT.low;
 
   return (
-    <MotherLayout title="Daily Check-In">
+    <MotherLayout title={t("checkin.title")}>
       <div className="px-4 py-5">
 
         {(mothersErrored || submitError) && (
           <div className="rounded-2xl p-4 border mb-4" style={{ backgroundColor: "#FCE8EE", borderColor: "#F0ABBE" }}>
             <p className="text-sm font-semibold" style={{ color: "#C94F6D" }}>
-              {mothersErrored ? "Couldn't load your record" : "Couldn't submit your check-in"}
+              {mothersErrored ? t("checkin.couldNotLoad") : t("checkin.couldNotSubmit")}
             </p>
             <p className="text-xs mt-1" style={{ color: "#2D2D2D" }}>
               {mothersErrored
-                ? mothersError instanceof Error ? mothersError.message : "Please check your connection and try again."
+                ? mothersError instanceof Error ? mothersError.message : t("motherHome.checkConnection")
                 : submitError}
             </p>
           </div>
@@ -173,7 +187,7 @@ export default function CheckinPage() {
                   {s === "vitals" && step === "symptoms" ? "✓" : i + 1}
                 </div>
                 <span className="text-xs font-medium capitalize" style={{ color: step === s ? "#2D2D2D" : "#AEAEB8" }}>
-                  {s === "vitals" ? "Vitals" : "Symptoms"}
+                  {s === "vitals" ? t("checkin.step.vitals") : t("checkin.step.symptoms")}
                 </span>
                 {i < 1 && <div className="h-px w-6" style={{ backgroundColor: step === "symptoms" ? "#87A878" : "#EDE8E3" }} />}
               </div>
@@ -185,7 +199,7 @@ export default function CheckinPage() {
         {step === "vitals" && (
           <div className="space-y-4">
             <p className="text-sm" style={{ color: "#7A7A8A" }}>
-              Enter your readings from your home kit or nearest pharmacy.
+              {t("checkin.subtitle")}
             </p>
 
             <div
@@ -193,11 +207,11 @@ export default function CheckinPage() {
               style={{ backgroundColor: "#FFFFFF", boxShadow: "0 1px 4px rgba(201,124,138,0.08)" }}
             >
               <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: "#7A7A8A" }}>
-                Blood Pressure
+                {t("checkin.bloodPressure")}
               </p>
               <div className="grid grid-cols-2 gap-3">
-                <VitalInput label="Systolic (top)" placeholder="e.g. 120" value={vitals.bp_systolic} onChange={(v) => setVital("bp_systolic", v)} unit="mmHg" error={errors.bp_systolic} inputMode="numeric" />
-                <VitalInput label="Diastolic (bottom)" placeholder="e.g. 80" value={vitals.bp_diastolic} onChange={(v) => setVital("bp_diastolic", v)} unit="mmHg" error={errors.bp_diastolic} inputMode="numeric" />
+                <VitalInput label={t("checkin.systolicTop")} placeholder="e.g. 120" value={vitals.bp_systolic} onChange={(v) => setVital("bp_systolic", v)} unit="mmHg" error={errors.bp_systolic} inputMode="numeric" />
+                <VitalInput label={t("checkin.diastolicBottom")} placeholder="e.g. 80" value={vitals.bp_diastolic} onChange={(v) => setVital("bp_diastolic", v)} unit="mmHg" error={errors.bp_diastolic} inputMode="numeric" />
               </div>
             </div>
 
@@ -206,11 +220,11 @@ export default function CheckinPage() {
               style={{ backgroundColor: "#FFFFFF", boxShadow: "0 1px 4px rgba(201,124,138,0.08)" }}
             >
               <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: "#7A7A8A" }}>
-                Other Readings
+                {t("checkin.otherReadings")}
               </p>
-              <VitalInput label="Blood Sugar" placeholder="e.g. 5.5" value={vitals.blood_sugar} onChange={(v) => setVital("blood_sugar", v)} unit="mmol/L" error={errors.blood_sugar} inputMode="decimal" />
-              <VitalInput label="Body Temperature" placeholder="e.g. 36.8" value={vitals.body_temp} onChange={(v) => setVital("body_temp", v)} unit="°C" error={errors.body_temp} inputMode="decimal" />
-              <VitalInput label="Heart Rate" placeholder="e.g. 78" value={vitals.heart_rate} onChange={(v) => setVital("heart_rate", v)} unit="bpm" error={errors.heart_rate} inputMode="numeric" />
+              <VitalInput label={t("checkin.bloodSugarLabel")} placeholder="e.g. 5.5" value={vitals.blood_sugar} onChange={(v) => setVital("blood_sugar", v)} unit="mmol/L" error={errors.blood_sugar} inputMode="decimal" />
+              <VitalInput label={t("checkin.bodyTempLabel")} placeholder="e.g. 36.8" value={vitals.body_temp} onChange={(v) => setVital("body_temp", v)} unit="°C" error={errors.body_temp} inputMode="decimal" />
+              <VitalInput label={t("checkin.heartRateLabel")} placeholder="e.g. 78" value={vitals.heart_rate} onChange={(v) => setVital("heart_rate", v)} unit="bpm" error={errors.heart_rate} inputMode="numeric" />
             </div>
 
             <button
@@ -223,7 +237,7 @@ export default function CheckinPage() {
               className="w-full rounded-2xl py-4 text-white font-bold text-base mt-1 transition-all active:scale-[0.97]"
               style={{ backgroundColor: "#C97C8A" }}
             >
-              Next — Symptoms
+              {t("checkin.nextSymptoms")}
             </button>
           </div>
         )}
@@ -233,29 +247,29 @@ export default function CheckinPage() {
           <div className="space-y-4">
             <div>
               <p className="text-base font-semibold mb-1" style={{ color: "#2D2D2D" }}>
-                Any symptoms today?
+                {t("checkin.anySymptoms")}
               </p>
               <p className="text-sm" style={{ color: "#7A7A8A" }}>
-                Tap all that apply. It's okay to select none.
+                {t("checkin.tapAll")}
               </p>
             </div>
 
             <div className="flex flex-wrap gap-2">
-              {SYMPTOMS.map((s) => {
-                const selected = selectedSymptoms.includes(s);
+              {SYMPTOM_KEYS.map((s) => {
+                const selected = selectedSymptoms.includes(s.value);
                 return (
                   <button
-                    key={s}
-                    onClick={() => toggleSymptom(s)}
+                    key={s.value}
+                    onClick={() => toggleSymptom(s.value)}
                     className="px-4 py-2.5 rounded-full text-sm font-medium border-2 transition-all active:scale-95"
                     style={{
                       borderColor: selected ? "#C97C8A" : "#EDE8E3",
                       backgroundColor: selected ? "#FCE8EE" : "#FFFFFF",
                       color: selected ? "#C94F6D" : "#7A7A8A",
                     }}
-                    data-testid={`symptom-${s.toLowerCase().replace(/ /g, "-")}`}
+                    data-testid={`symptom-${s.value.toLowerCase().replace(/ /g, "-")}`}
                   >
-                    {s}
+                    {t(s.key)}
                   </button>
                 );
               })}
@@ -267,7 +281,7 @@ export default function CheckinPage() {
                 className="flex-1 rounded-2xl py-4 font-semibold text-sm border-2 transition-all"
                 style={{ borderColor: "#EDE8E3", color: "#7A7A8A", backgroundColor: "#FFFFFF" }}
               >
-                Back
+                {t("checkin.back")}
               </button>
               <button
                 onClick={handleSubmit}
@@ -276,7 +290,7 @@ export default function CheckinPage() {
                 style={{ backgroundColor: "#C97C8A" }}
                 data-testid="button-submit-checkin"
               >
-                {submitting ? "Submitting..." : "Submit Check-In"}
+                {submitting ? t("checkin.submitting") : t("checkin.submit")}
               </button>
             </div>
           </div>
@@ -310,10 +324,10 @@ export default function CheckinPage() {
                 style={{ borderColor: "#C94F6D", backgroundColor: "#FCE8EE" }}
               >
                 <p className="font-bold text-sm mb-1" style={{ color: "#C94F6D" }}>
-                  What to do right now
+                  {t("checkin.whatToDoNow")}
                 </p>
                 <p className="text-sm" style={{ color: "#2D2D2D" }}>
-                  Show this screen to your nearest clinic or community health worker. If you feel very unwell, go to the hospital.
+                  {t("checkin.whatToDoNowMsg")}
                 </p>
               </div>
             )}
@@ -324,7 +338,7 @@ export default function CheckinPage() {
                 className="flex-1 rounded-2xl py-4 font-semibold text-sm border-2 transition-all"
                 style={{ borderColor: "#EDE8E3", color: "#7A7A8A", backgroundColor: "#FFFFFF" }}
               >
-                View History
+                {t("checkin.viewHistory")}
               </button>
               <button
                 onClick={() => { playButtonPress(); router.push("/mother"); }}
@@ -332,7 +346,7 @@ export default function CheckinPage() {
                 style={{ backgroundColor: "#C97C8A" }}
                 data-testid="button-done"
               >
-                Done
+                {t("checkin.done")}
               </button>
             </div>
           </div>

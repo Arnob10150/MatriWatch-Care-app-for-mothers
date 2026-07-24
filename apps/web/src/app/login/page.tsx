@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Heart, ShieldCheck, Stethoscope, Users, Eye, EyeOff, AlertCircle } from "lucide-react";
+import { LanguageToggle } from "@/components/LanguageToggle";
+import { useLanguage } from "@/components/LanguageProvider";
 
 const API_BASE = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api").replace(/\/$/, "");
 
@@ -62,6 +64,7 @@ type RoleId = (typeof ROLES)[number]["id"];
 
 export default function LoginPage() {
   const router = useRouter();
+  const { t } = useLanguage();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -74,7 +77,7 @@ export default function LoginPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!email.trim() || !password.trim()) {
-      setError("Please enter your email and password.");
+      setError(t("login.missingFields"));
       return;
     }
     setError("");
@@ -89,7 +92,7 @@ export default function LoginPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error ?? "Invalid email or password.");
+        setError(data.error ?? t("login.invalidCredentials"));
         return;
       }
 
@@ -107,7 +110,7 @@ export default function LoginPage() {
 
       router.push(matchedRole.redirect);
     } catch {
-      setError("Could not reach the server. Make sure the API is running.");
+      setError(t("login.serverUnreachable"));
     } finally {
       setLoading(false);
     }
@@ -119,6 +122,9 @@ export default function LoginPage() {
       style={{ backgroundColor: "#FFF8F0" }}
     >
       <div className="w-full max-w-sm">
+        <div className="mb-3 flex justify-end">
+          <LanguageToggle />
+        </div>
         <div
           className="rounded-2xl bg-white p-8"
           style={{ boxShadow: "0 4px 24px rgba(201,124,138,0.12)" }}
@@ -132,17 +138,17 @@ export default function LoginPage() {
               <Heart className="h-7 w-7" style={{ color: "#C97C8A", fill: "#C97C8A" }} />
             </div>
             <h1 className="text-2xl font-bold" style={{ color: "#C97C8A" }}>
-              MatriWatch
+              {t("layout.appName")}
             </h1>
             <p className="mt-1 text-sm" style={{ color: "#7A7A8A" }}>
-              Caring for every mother, every day
+              {t("login.tagline")}
             </p>
           </div>
 
           {/* Role selector */}
           <div className="mb-5">
             <p className="mb-2.5 text-xs font-medium" style={{ color: "#2D2D2D" }}>
-              I am a…
+              {t("register.role")}
             </p>
             <div className="grid grid-cols-2 gap-2">
               {ROLES.map((r) => {
@@ -194,7 +200,7 @@ export default function LoginPage() {
                 className="mb-1.5 block text-xs font-medium"
                 style={{ color: "#2D2D2D" }}
               >
-                Email address
+                {t("login.email")}
               </label>
               <input
                 id="email"
@@ -224,7 +230,7 @@ export default function LoginPage() {
                 className="mb-1.5 block text-xs font-medium"
                 style={{ color: "#2D2D2D" }}
               >
-                Password
+                {t("login.password")}
               </label>
               <div className="relative">
                 <input
@@ -263,14 +269,14 @@ export default function LoginPage() {
               className="w-full rounded-xl py-2.5 text-sm font-semibold text-white transition-all disabled:opacity-70"
               style={{ backgroundColor: selectedRole.buttonColor }}
             >
-              {loading ? "Signing in…" : `Sign in as ${selectedRole.label}`}
+              {loading ? t("login.submitting") : t("login.signInAs", { role: selectedRole.label })}
             </button>
           </form>
 
           <p className="mt-5 text-center text-xs" style={{ color: "#7A7A8A" }}>
-            Don&apos;t have an account?{" "}
+            {t("login.noAccount")}{" "}
             <Link href="/register" className="font-semibold" style={{ color: "#C97C8A" }}>
-              Register
+              {t("login.registerLink")}
             </Link>
           </p>
         </div>

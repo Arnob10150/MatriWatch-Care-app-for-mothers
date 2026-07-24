@@ -25,9 +25,10 @@ function getClient(): Anthropic | null {
 
 router.post("/chat", async (req, res): Promise<void> => {
   try {
-    const { message, history } = req.body as {
+    const { message, history, locale } = req.body as {
       message: string;
       history?: { role: "user" | "assistant"; text: string }[];
+      locale?: "en" | "bn";
     };
 
     if (!message || typeof message !== "string") {
@@ -49,10 +50,15 @@ router.post("/chat", async (req, res): Promise<void> => {
       { role: "user" as const, content: message },
     ];
 
+    const system =
+      locale === "bn"
+        ? `${SYSTEM_PROMPT}\n\nRespond in Bangla (বাংলা), using simple, warm, everyday language a mother in rural Bangladesh would easily understand.`
+        : SYSTEM_PROMPT;
+
     const response = await client.messages.create({
       model: "claude-opus-4-8",
       max_tokens: 512,
-      system: SYSTEM_PROMPT,
+      system,
       messages,
     });
 

@@ -4,9 +4,17 @@ This folder separates datasets by source and module.
 
 ## Included Now
 
-- `current_ppd/PPD_dataset_v2.csv` - Existing local postpartum depression research dataset.
-- `current_ppd/PPD_Data Dictionary_v2.csv` - Existing local data dictionary.
-- `Dataset1.zip` through `Dataset 10.zip` plus `dataset4.zip` and `Maternal Health Risk Assessment Dataset 3.zip` - local training inputs for the MatriWatch model pipeline.
+Each dataset lives in its own subfolder, named after the model/module it trains:
+
+- `current_ppd/` - Existing local postpartum depression research dataset (`PPD_dataset_v2.csv`, `PPD_Data Dictionary_v2.csv`).
+- `maternal_risk/` - `Dataset1.zip`, `Maternal Health Risk Assessment Dataset 3.zip`.
+- `birth_weight/` - `Dataset2.zip`.
+- `pregnancy_high_risk/` - `dataset4.zip`.
+- `fetal_health/` - `Dataset 5.zip`.
+- `postpartum_depression/` - `Dataset 6.zip`.
+- `gestational_diabetes/` - `Dataset 7.zip`, `Dataset 8.zip`.
+- `symptom_severity/` - `Dataset 9.zip`.
+- `symptom_disease/` - `Dataset 10.zip`.
 
 ## Train Local Models
 

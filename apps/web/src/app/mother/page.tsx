@@ -14,16 +14,22 @@ import {
 } from "@/lib/mother-api";
 import { formatDistanceToNow, isToday, differenceInDays } from "date-fns";
 import { playTap } from "@/lib/sounds";
+import { useLanguage } from "@/components/LanguageProvider";
 
-const RISK_CONFIG = {
-  low: { label: "You're doing well", sub: "Your vitals look healthy. Keep it up!", bg: "#F0F7ED", text: "#87A878", border: "#C6DFC0", emoji: "✓" },
-  mid: { label: "Keep watching", sub: "Some readings need attention. Check in with your clinic soon.", bg: "#FDF3E7", text: "#D4914A", border: "#F0CCA4", emoji: "!" },
-  high: { label: "Contact your clinic today", sub: "Your readings are in a concerning range. Please call your clinic or visit immediately.", bg: "#FCE8EE", text: "#C94F6D", border: "#F0ABBE", emoji: "!" },
-};
+function useRiskConfig() {
+  const { t } = useLanguage();
+  return {
+    low: { label: t("motherHome.risk.low.label"), sub: t("motherHome.risk.low.sub"), bg: "#F0F7ED", text: "#87A878", border: "#C6DFC0", emoji: "✓" },
+    mid: { label: t("motherHome.risk.mid.label"), sub: t("motherHome.risk.mid.sub"), bg: "#FDF3E7", text: "#D4914A", border: "#F0CCA4", emoji: "!" },
+    high: { label: t("motherHome.risk.high.label"), sub: t("motherHome.risk.high.sub"), bg: "#FCE8EE", text: "#C94F6D", border: "#F0ABBE", emoji: "!" },
+  };
+}
 
 export default function MotherHomePage() {
   const router = useRouter();
   const user = getAuth();
+  const { t } = useLanguage();
+  const RISK_CONFIG = useRiskConfig();
 
   // Find mother record by name match (mock approach since no user_id linkage yet)
   const { data: allMothers, isLoading: mothersLoading, isError: mothersErrored, error: mothersError } = useListMothers({});
@@ -58,9 +64,9 @@ export default function MotherHomePage() {
 
         {mothersErrored && (
           <div className="rounded-2xl p-4 border" style={{ backgroundColor: "#FCE8EE", borderColor: "#F0ABBE" }}>
-            <p className="text-sm font-semibold" style={{ color: "#C94F6D" }}>Couldn't load your data</p>
+            <p className="text-sm font-semibold" style={{ color: "#C94F6D" }}>{t("motherHome.couldNotLoad")}</p>
             <p className="text-xs mt-1" style={{ color: "#2D2D2D" }}>
-              {mothersError instanceof Error ? mothersError.message : "Please check your connection and try again."}
+              {mothersError instanceof Error ? mothersError.message : t("motherHome.checkConnection")}
             </p>
           </div>
         )}
@@ -68,12 +74,12 @@ export default function MotherHomePage() {
         {/* Greeting */}
         <div>
           <h2 className="text-xl font-bold" style={{ color: "#2D2D2D" }}>
-            Hello, {user?.name?.split(" ")[0] ?? "there"}
+            {t("motherHome.hello", { name: user?.name?.split(" ")[0] ?? "there" })}
           </h2>
           <p className="text-sm mt-0.5" style={{ color: "#7A7A8A" }}>
             {mother?.gestational_age != null
-              ? `Week ${mother.gestational_age} of your pregnancy`
-              : "Welcome to MatriWatch"}
+              ? t("motherHome.week", { week: mother.gestational_age })
+              : t("motherHome.welcome")}
           </p>
         </div>
 
@@ -106,7 +112,9 @@ export default function MotherHomePage() {
             </div>
             {latestCheckin && (
               <p className="text-xs mt-3 pl-1" style={{ color: "#7A7A8A" }}>
-                Last check-in {formatDistanceToNow(new Date(latestCheckin.created_at), { addSuffix: true })}
+                {t("motherHome.lastCheckin", {
+                  time: formatDistanceToNow(new Date(latestCheckin.created_at), { addSuffix: true }),
+                })}
               </p>
             )}
           </div>
@@ -121,7 +129,7 @@ export default function MotherHomePage() {
             data-testid="button-checkin-cta"
           >
             <ClipboardList className="w-6 h-6" />
-            Check In Today
+            {t("motherHome.checkInToday")}
           </button>
         )}
 
@@ -137,8 +145,8 @@ export default function MotherHomePage() {
               <span className="text-white text-sm font-bold">✓</span>
             </div>
             <div>
-              <p className="text-sm font-semibold" style={{ color: "#87A878" }}>Checked in today</p>
-              <p className="text-xs" style={{ color: "#7A7A8A" }}>Great job! See you again tomorrow.</p>
+              <p className="text-sm font-semibold" style={{ color: "#87A878" }}>{t("motherHome.checkedInToday")}</p>
+              <p className="text-xs" style={{ color: "#7A7A8A" }}>{t("motherHome.seeYouTomorrow")}</p>
             </div>
           </div>
         )}
@@ -159,8 +167,8 @@ export default function MotherHomePage() {
                 <span className="text-lg">💬</span>
               </div>
               <div>
-                <p className="font-semibold text-sm" style={{ color: "#9B6DC5" }}>Weekly Mood Check</p>
-                <p className="text-xs mt-0.5" style={{ color: "#7A7A8A" }}>10 quick questions · 3 minutes</p>
+                <p className="font-semibold text-sm" style={{ color: "#9B6DC5" }}>{t("motherHome.weeklyMoodCheck")}</p>
+                <p className="text-xs mt-0.5" style={{ color: "#7A7A8A" }}>{t("motherHome.moodCheckDesc")}</p>
               </div>
             </div>
             <ChevronRight className="w-4 h-4 flex-shrink-0" style={{ color: "#9B6DC5" }} />
@@ -180,14 +188,14 @@ export default function MotherHomePage() {
               <Calendar className="w-5 h-5" style={{ color: "#C97C8A" }} />
             </div>
             <div>
-              <p className="text-xs font-medium" style={{ color: "#7A7A8A" }}>Estimated due date</p>
+              <p className="text-xs font-medium" style={{ color: "#7A7A8A" }}>{t("motherHome.dueDate")}</p>
               <p className="text-lg font-bold mt-0.5" style={{ color: "#2D2D2D" }}>
                 {new Date(mother.due_date).toLocaleDateString("en-GB", {
                   day: "numeric", month: "long", year: "numeric"
                 })}
               </p>
               <p className="text-xs mt-0.5" style={{ color: "#C97C8A" }}>
-                {differenceInDays(new Date(mother.due_date), new Date())} days to go
+                {differenceInDays(new Date(mother.due_date), new Date())} {t("motherHome.daysToGo")}
               </p>
             </div>
           </div>
@@ -197,13 +205,13 @@ export default function MotherHomePage() {
         {checkins && checkins.length > 0 && (
           <div>
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-semibold" style={{ color: "#2D2D2D" }}>Recent Readings</h3>
+              <h3 className="text-sm font-semibold" style={{ color: "#2D2D2D" }}>{t("motherHome.recentReadings")}</h3>
               <button
                 onClick={() => { playTap(); router.push("/mother/history"); }}
                 className="text-xs font-medium"
                 style={{ color: "#C97C8A" }}
               >
-                View all
+                {t("motherHome.viewAll")}
               </button>
             </div>
             <div className="space-y-2">
@@ -229,7 +237,7 @@ export default function MotherHomePage() {
                       className="text-xs font-medium px-2.5 py-1 rounded-full"
                       style={{ backgroundColor: cfg.bg, color: cfg.text }}
                     >
-                      {level.charAt(0).toUpperCase() + level.slice(1)}
+                      {t(`risk.${level}`)}
                     </span>
                   </div>
                 );
@@ -247,10 +255,10 @@ export default function MotherHomePage() {
             <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: "#D4914A" }} />
             <div>
               <p className="text-sm font-semibold" style={{ color: "#D4914A" }}>
-                You missed {daysSinceLastCheckin} days of check-ins
+                {t("motherHome.missedDays", { days: daysSinceLastCheckin })}
               </p>
               <p className="text-xs mt-0.5" style={{ color: "#7A7A8A" }}>
-                Regular check-ins help your doctor stay informed. Please check in today.
+                {t("motherHome.missedDaysSub")}
               </p>
             </div>
           </div>

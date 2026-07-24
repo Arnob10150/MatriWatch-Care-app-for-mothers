@@ -149,8 +149,8 @@ def finish_training(name: str, model: Any, x_test: pd.DataFrame | pd.Series, y_t
 
 
 def train_maternal_risk() -> dict[str, Any]:
-    dataset1 = read_zip_table("Dataset1.zip", "Maternal Health Risk Data Set.csv")
-    dataset3 = read_zip_table("Maternal Health Risk Assessment Dataset 3.zip", "Maternal Health Risk Assessment Dataset/Dataset - Updated.csv")
+    dataset1 = read_zip_table("maternal_risk/Dataset1.zip", "Maternal Health Risk Data Set.csv")
+    dataset3 = read_zip_table("maternal_risk/Maternal Health Risk Assessment Dataset 3.zip", "Maternal Health Risk Assessment Dataset/Dataset - Updated.csv")
 
     frame1 = pd.DataFrame(
         {
@@ -197,7 +197,7 @@ def train_maternal_risk() -> dict[str, Any]:
             "model": model,
             "features": features.columns.tolist(),
             "class_labels": ["Low", "Mid", "High"],
-            "source_datasets": ["Dataset1.zip", "Maternal Health Risk Assessment Dataset 3.zip"],
+            "source_datasets": ["maternal_risk/Dataset1.zip", "maternal_risk/Maternal Health Risk Assessment Dataset 3.zip"],
             "metrics": metrics,
         },
     )
@@ -205,7 +205,7 @@ def train_maternal_risk() -> dict[str, Any]:
 
 
 def train_birth_weight() -> dict[str, Any]:
-    frame = read_zip_table("Dataset2.zip", "birth_weight_dataset.csv").dropna(subset=["birth_weight_category"])
+    frame = read_zip_table("birth_weight/Dataset2.zip", "birth_weight_dataset.csv").dropna(subset=["birth_weight_category"])
     features, _, x_train, x_test, y_train, y_test = split_xy(frame, "birth_weight_category")
     numeric_columns = features.select_dtypes(include=["number", "bool"]).columns.tolist()
     categorical_columns = [column for column in features.columns if column not in numeric_columns]
@@ -244,7 +244,7 @@ def train_birth_weight() -> dict[str, Any]:
             "task": "birth_weight",
             "model": model,
             "features": features.columns.tolist(),
-            "source_datasets": ["Dataset2.zip"],
+            "source_datasets": ["birth_weight/Dataset2.zip"],
             "metrics": metrics,
         },
     )
@@ -252,7 +252,7 @@ def train_birth_weight() -> dict[str, Any]:
 
 
 def train_high_risk_pregnancy() -> dict[str, Any]:
-    raw = read_zip_table("dataset4.zip", "Book2.xlsx", header=1)
+    raw = read_zip_table("pregnancy_high_risk/dataset4.zip", "Book2.xlsx", header=1)
     systolic, diastolic = zip(*raw["রক্ত চাপ"].map(parse_bp))
     frame = pd.DataFrame(
         {
@@ -287,7 +287,7 @@ def train_high_risk_pregnancy() -> dict[str, Any]:
             "task": "pregnancy_high_risk",
             "model": model,
             "features": features.columns.tolist(),
-            "source_datasets": ["dataset4.zip"],
+            "source_datasets": ["pregnancy_high_risk/dataset4.zip"],
             "metrics": metrics,
         },
     )
@@ -295,7 +295,7 @@ def train_high_risk_pregnancy() -> dict[str, Any]:
 
 
 def train_fetal_health() -> dict[str, Any]:
-    frame = read_zip_table("Dataset 5.zip", "fetal_health.csv").dropna(subset=["fetal_health"])
+    frame = read_zip_table("fetal_health/Dataset 5.zip", "fetal_health.csv").dropna(subset=["fetal_health"])
     frame["fetal_health"] = frame["fetal_health"].astype(int) - 1
     features, _, x_train, x_test, y_train, y_test = split_xy(frame, "fetal_health")
     model = tabular_pipeline(features, RandomForestClassifier(n_estimators=320, class_weight="balanced", random_state=42))
@@ -308,7 +308,7 @@ def train_fetal_health() -> dict[str, Any]:
             "model": model,
             "features": features.columns.tolist(),
             "class_labels": ["Normal", "Suspect", "Pathological"],
-            "source_datasets": ["Dataset 5.zip"],
+            "source_datasets": ["fetal_health/Dataset 5.zip"],
             "metrics": metrics,
         },
     )
@@ -316,7 +316,7 @@ def train_fetal_health() -> dict[str, Any]:
 
 
 def train_ppd_postnatal() -> dict[str, Any]:
-    frame = read_zip_table("Dataset 6.zip", "post natal data.csv")
+    frame = read_zip_table("postpartum_depression/Dataset 6.zip", "post natal data.csv")
     target = frame["Feeling sad or Tearful"].astype(str).str.lower().map({"no": 0, "yes": 1, "sometimes": 1})
     features = frame.drop(columns=["Timestamp", "Feeling sad or Tearful"]).copy()
     dataset = features.assign(ppd_flag=target).dropna(subset=["ppd_flag"])
@@ -331,7 +331,7 @@ def train_ppd_postnatal() -> dict[str, Any]:
             "task": "postpartum_depression",
             "model": model,
             "features": features.columns.tolist(),
-            "source_datasets": ["Dataset 6.zip"],
+            "source_datasets": ["postpartum_depression/Dataset 6.zip"],
             "metrics": metrics,
             "note": "Dataset 6 has no EPDS target, so Feeling sad or Tearful is used as the PPD proxy label.",
         },
@@ -340,8 +340,8 @@ def train_ppd_postnatal() -> dict[str, Any]:
 
 
 def train_gdm() -> list[dict[str, Any]]:
-    dataset7 = read_zip_table("Dataset 7.zip", "Gestational Diabetic Dat Set.xlsx").dropna(subset=["Class Label(GDM /Non GDM)"])
-    dataset8 = read_zip_table("Dataset 8.zip", "Gestational Diabetes.csv").dropna(subset=["Prediction"])
+    dataset7 = read_zip_table("gestational_diabetes/Dataset 7.zip", "Gestational Diabetic Dat Set.xlsx").dropna(subset=["Class Label(GDM /Non GDM)"])
+    dataset8 = read_zip_table("gestational_diabetes/Dataset 8.zip", "Gestational Diabetes.csv").dropna(subset=["Prediction"])
 
     clinical = pd.DataFrame(
         {
@@ -381,7 +381,7 @@ def train_gdm() -> list[dict[str, Any]]:
             "task": "gdm_ensemble",
             "model": model,
             "features": features.columns.tolist(),
-            "source_datasets": ["Dataset 7.zip", "Dataset 8.zip"],
+            "source_datasets": ["gestational_diabetes/Dataset 7.zip", "gestational_diabetes/Dataset 8.zip"],
             "metrics": metrics,
         },
     )
@@ -401,7 +401,7 @@ def clinical_symptom_severity(row: pd.Series) -> str:
 
 
 def train_symptoms() -> list[dict[str, Any]]:
-    severity_frame = read_zip_table("Dataset 9.zip", "AI_Symptom_Checker_Dataset.csv").dropna(subset=["Symptoms", "Severity"])
+    severity_frame = read_zip_table("symptom_severity/Dataset 9.zip", "AI_Symptom_Checker_Dataset.csv").dropna(subset=["Symptoms", "Severity"])
     severity_frame = severity_frame.copy()
     severity_frame["clinical_severity"] = severity_frame.apply(clinical_symptom_severity, axis=1)
     severity_frame["triage_text"] = (
@@ -433,13 +433,13 @@ def train_symptoms() -> list[dict[str, Any]]:
         {
             "task": "symptom_severity",
             "model": severity_model,
-            "source_datasets": ["Dataset 9.zip"],
+            "source_datasets": ["symptom_severity/Dataset 9.zip"],
             "metrics": metrics9,
             "label_source": "clinical_derived_from_symptoms_and_condition",
         },
     )
 
-    disease_frame = read_zip_table("Dataset 10.zip", "Train_data.csv").dropna(subset=["text", "label"])
+    disease_frame = read_zip_table("symptom_disease/Dataset 10.zip", "Train_data.csv").dropna(subset=["text", "label"])
     x_train2, x_test2, y_train2, y_test2 = train_test_split(
         disease_frame["text"].astype(str),
         disease_frame["label"].astype(str),
@@ -460,7 +460,7 @@ def train_symptoms() -> list[dict[str, Any]]:
         {
             "task": "symptom_disease",
             "model": disease_model,
-            "source_datasets": ["Dataset 10.zip"],
+            "source_datasets": ["symptom_disease/Dataset 10.zip"],
             "metrics": metrics10,
         },
     )

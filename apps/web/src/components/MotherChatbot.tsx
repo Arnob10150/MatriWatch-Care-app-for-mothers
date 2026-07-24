@@ -3,6 +3,7 @@
 import { useMemo, useRef, useState } from "react";
 import { HeartPulse, MessageCircle, Send, X } from "lucide-react";
 import { matchConditions } from "@matriwatch/shared";
+import { useLanguage } from "@/components/LanguageProvider";
 
 const API_BASE = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api").replace(/\/$/, "");
 
@@ -12,12 +13,12 @@ type ChatMessage = {
   text: string;
 };
 
-const QUICK_PROMPTS = [
-  "When should I call my clinic?",
-  "I feel dizzy",
-  "Help me with mood",
-  "What should I track today?",
-];
+const QUICK_PROMPT_KEYS = [
+  "chatbot.prompt.callClinic",
+  "chatbot.prompt.dizzy",
+  "chatbot.prompt.mood",
+  "chatbot.prompt.trackToday",
+] as const;
 
 function buildReply(input: string): string {
   const text = input.toLowerCase();
@@ -53,6 +54,7 @@ function buildReply(input: string): string {
 }
 
 export function MotherChatbot() {
+  const { t, locale } = useLanguage();
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
@@ -60,12 +62,12 @@ export function MotherChatbot() {
     {
       id: 1,
       role: "bot",
-      text: "Hi, I am MatriWatch Care Assistant. Tell me what you are feeling or ask about check-ins, warning signs, or mood support.",
+      text: t("chatbot.intro"),
     },
   ]);
   const nextId = useRef(2);
 
-  const title = useMemo(() => (open ? "Care Assistant" : "Open care assistant"), [open]);
+  const title = useMemo(() => (open ? t("chatbot.title") : t("chatbot.openLabel")), [open, t]);
 
   async function send(text: string) {
     const trimmed = text.trim();
@@ -82,7 +84,7 @@ export function MotherChatbot() {
       const res = await fetch(`${API_BASE}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: trimmed, history }),
+        body: JSON.stringify({ message: trimmed, history, locale }),
       });
       if (!res.ok) throw new Error(`status ${res.status}`);
       const data = (await res.json()) as { reply: string };
@@ -109,15 +111,15 @@ export function MotherChatbot() {
                 <HeartPulse className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-sm font-bold">Care Assistant</p>
-                <p className="text-xs text-white/75">For mothers</p>
+                <p className="text-sm font-bold">{t("chatbot.title")}</p>
+                <p className="text-xs text-white/75">{t("chatbot.subtitle")}</p>
               </div>
             </div>
             <button
               type="button"
               onClick={() => setOpen(false)}
               className="flex h-9 w-9 items-center justify-center rounded-full text-white/85 hover:bg-white/15"
-              aria-label="Close care assistant"
+              aria-label={t("chatbot.closeLabel")}
             >
               <X className="h-5 w-5" />
             </button>
@@ -143,23 +145,23 @@ export function MotherChatbot() {
                 className="mr-auto max-w-[86%] rounded-2xl px-3.5 py-2.5 text-sm leading-5 text-[#2D2D2D]"
                 style={{ backgroundColor: "#FFFFFF", boxShadow: "0 1px 4px rgba(201,124,138,0.08)" }}
               >
-                Typing…
+                {t("chatbot.typing")}
               </div>
             )}
           </div>
 
           <div className="border-t bg-white px-3 py-3" style={{ borderColor: "#EDE8E3" }}>
             <div className="mb-2 flex gap-2 overflow-x-auto pb-1">
-              {QUICK_PROMPTS.map((prompt) => (
+              {QUICK_PROMPT_KEYS.map((key) => (
                 <button
-                  key={prompt}
+                  key={key}
                   type="button"
-  onClick={() => send(prompt)}
+                  onClick={() => send(t(key))}
                   disabled={sending}
                   className="shrink-0 rounded-full border px-3 py-1.5 text-xs font-medium disabled:opacity-50"
                   style={{ borderColor: "#EDE8E3", color: "#C97C8A", backgroundColor: "#FFF8F0" }}
                 >
-                  {prompt}
+                  {t(key)}
                 </button>
               ))}
             </div>
@@ -174,7 +176,7 @@ export function MotherChatbot() {
               <input
                 value={draft}
                 onChange={(event) => setDraft(event.target.value)}
-                placeholder="Type your question"
+                placeholder={t("chatbot.placeholder")}
                 className="min-h-11 flex-1 rounded-xl border px-3 text-sm outline-none"
                 style={{ borderColor: "#EDE8E3", color: "#2D2D2D" }}
               />
@@ -183,7 +185,7 @@ export function MotherChatbot() {
                 className="flex h-11 w-11 items-center justify-center rounded-xl text-white disabled:opacity-50"
                 style={{ backgroundColor: "#C97C8A" }}
                 disabled={!draft.trim() || sending}
-                aria-label="Send message"
+                aria-label={t("chatbot.sendLabel")}
               >
                 <Send className="h-4 w-4" />
               </button>

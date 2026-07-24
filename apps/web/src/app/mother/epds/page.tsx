@@ -8,69 +8,28 @@ import { getAuth } from "@/lib/auth";
 import { playTap, playEpdsComplete, playEpdsAnswer, playButtonPress } from "@/lib/sounds";
 import { useQueryClient } from "@tanstack/react-query";
 import { getListEpdsForMotherQueryKey } from "@/lib/mother-api";
+import { useLanguage } from "@/components/LanguageProvider";
 
-const QUESTIONS = [
-  {
-    text: "I have been able to laugh and see the funny side of things",
-    options: ["As much as I always could", "Not quite so much now", "Definitely not so much now", "Not at all"],
+const QUESTION_KEYS = [
+  "epds.q1", "epds.q2", "epds.q3", "epds.q4", "epds.q5",
+  "epds.q6", "epds.q7", "epds.q8", "epds.q9", "epds.q10",
+] as const;
+
+function useQuestions() {
+  const { t } = useLanguage();
+  return QUESTION_KEYS.map((key) => ({
+    text: t(`${key}.text`),
+    options: [t(`${key}.o0`), t(`${key}.o1`), t(`${key}.o2`), t(`${key}.o3`)],
     scores: [0, 1, 2, 3],
-  },
-  {
-    text: "I have looked forward with enjoyment to things",
-    options: ["As much as I always could", "Rather less than I used to", "Definitely less than I used to", "Hardly at all"],
-    scores: [0, 1, 2, 3],
-  },
-  {
-    text: "I have blamed myself unnecessarily when things went wrong",
-    options: ["No, never", "Not very often", "Yes, some of the time", "Yes, most of the time"],
-    scores: [0, 1, 2, 3],
-  },
-  {
-    text: "I have been anxious or worried for no good reason",
-    options: ["No, not at all", "Hardly ever", "Yes, sometimes", "Yes, very often"],
-    scores: [0, 1, 2, 3],
-  },
-  {
-    text: "I have felt scared or panicky for no very good reason",
-    options: ["No, not at all", "No, not much", "Yes, sometimes", "Yes, quite a lot"],
-    scores: [0, 1, 2, 3],
-  },
-  {
-    text: "Things have been getting on top of me",
-    options: [
-      "No, I have been coping as well as ever",
-      "No, most of the time I have coped quite well",
-      "Yes, sometimes I haven't coped as well as usual",
-      "Yes, most of the time I haven't been coping at all",
-    ],
-    scores: [0, 1, 2, 3],
-  },
-  {
-    text: "I have been so unhappy that I have had difficulty sleeping",
-    options: ["No, not at all", "Not very often", "Yes, sometimes", "Yes, most of the time"],
-    scores: [0, 1, 2, 3],
-  },
-  {
-    text: "I have felt sad or miserable",
-    options: ["No, not at all", "Not very often", "Yes, quite often", "Yes, most of the time"],
-    scores: [0, 1, 2, 3],
-  },
-  {
-    text: "I have been so unhappy that I have been crying",
-    options: ["No, never", "Only occasionally", "Yes, quite often", "Yes, most of the time"],
-    scores: [0, 1, 2, 3],
-  },
-  {
-    text: "The thought of harming myself has occurred to me",
-    options: ["Never", "Hardly ever", "Sometimes", "Yes, quite often"],
-    scores: [0, 1, 2, 3],
-  },
-];
+  }));
+}
 
 export default function EpdsPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const user = getAuth();
+  const { t } = useLanguage();
+  const QUESTIONS = useQuestions();
 
   const { data: allMothers } = useListMothers({});
   const mother = allMothers?.find((m) =>
@@ -132,7 +91,7 @@ export default function EpdsPage() {
 
   if (done) {
     return (
-      <MotherLayout title="Mood Check">
+      <MotherLayout title={t("nav.moodCheck")}>
         <div className="px-4 py-10 flex flex-col items-center text-center gap-6">
           <div
             className="w-28 h-28 rounded-full flex flex-col items-center justify-center"
@@ -145,18 +104,16 @@ export default function EpdsPage() {
               {totalScore}
             </span>
             <span className="text-xs font-medium" style={{ color: ppd ? "#C94F6D" : "#87A878" }}>
-              out of 30
+              {t("epds.outOf30")}
             </span>
           </div>
 
           <div>
             <h2 className="text-xl font-bold mb-2" style={{ color: "#2D2D2D" }}>
-              {ppd ? "Thank you for sharing" : "Thank you!"}
+              {ppd ? t("epds.thankYouShared") : t("epds.thankYou")}
             </h2>
             <p className="text-sm leading-relaxed" style={{ color: "#7A7A8A" }}>
-              {ppd
-                ? "Your score suggests you may be experiencing some emotional difficulties. A nurse from your clinic will reach out to you soon. You are not alone."
-                : "Your score is in the healthy range. Keep checking in regularly — your wellbeing matters."}
+              {ppd ? t("epds.flaggedMessage") : t("epds.healthyMessage")}
             </p>
           </div>
 
@@ -166,10 +123,10 @@ export default function EpdsPage() {
               style={{ borderColor: "#D8C4E8", backgroundColor: "#F3EDF9" }}
             >
               <p className="text-sm font-semibold mb-1" style={{ color: "#9B6DC5" }}>
-                You are not alone
+                {t("epds.notAlone")}
               </p>
               <p className="text-xs" style={{ color: "#7A7A8A" }}>
-                Postpartum feelings are common and treatable. Your care team has been notified and will follow up with you.
+                {t("epds.notAloneMsg")}
               </p>
             </div>
           )}
@@ -180,7 +137,7 @@ export default function EpdsPage() {
             style={{ backgroundColor: "#C97C8A" }}
             data-testid="button-epds-done"
           >
-            Back to Home
+            {t("epds.backToHome")}
           </button>
         </div>
       </MotherLayout>
@@ -188,13 +145,13 @@ export default function EpdsPage() {
   }
 
   return (
-    <MotherLayout title="Weekly Mood Check">
+    <MotherLayout title={t("motherHome.weeklyMoodCheck")}>
       <div className="px-4 py-5 flex flex-col gap-5">
         {/* Progress */}
         <div>
           <div className="flex justify-between text-xs mb-2" style={{ color: "#7A7A8A" }}>
-            <span>Question {current + 1} of {QUESTIONS.length}</span>
-            <span>{Math.round(progress)}% done</span>
+            <span>{t("epds.questionOf", { current: current + 1, total: QUESTIONS.length })}</span>
+            <span>{t("epds.percentDone", { percent: Math.round(progress) })}</span>
           </div>
           <div className="h-2 rounded-full overflow-hidden" style={{ backgroundColor: "#EDE8E3" }}>
             <div
@@ -213,7 +170,7 @@ export default function EpdsPage() {
           }}
         >
           <p className="text-xs font-medium mb-2" style={{ color: "#9B6DC5" }}>
-            Over the past 7 days...
+            {t("epds.pastWeek")}
           </p>
           <p className="text-base font-semibold leading-snug" style={{ color: "#2D2D2D" }}>
             {q.text}
@@ -263,7 +220,7 @@ export default function EpdsPage() {
             className="text-sm font-medium self-start"
             style={{ color: "#7A7A8A" }}
           >
-            ← Previous question
+            {t("epds.previousQuestion")}
           </button>
         )}
       </div>
