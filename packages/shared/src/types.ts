@@ -19,6 +19,7 @@ export type RiskResult = {
   score: number;
   reasons: string[];
   model?: string;
+  matchedConditions?: string[];
 };
 
 export type EpdsAnswer = 0 | 1 | 2 | 3;

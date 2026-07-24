@@ -1,4 +1,5 @@
 import type { CheckInInput, RiskLevel, RiskResult } from "./types";
+import { matchConditions } from "./conditions";
 
 const HIGH_RISK_SYMPTOMS = new Set([
   "severe headache",
@@ -76,12 +77,19 @@ export function ruleBasedRisk(input: CheckInInput): RiskResult {
     }
   }
 
+  const matchedConditions = matchConditions(input.symptoms ?? [], input.notes);
+  for (const condition of matchedConditions) {
+    score += condition.severity === "urgent" ? 25 : 10;
+    reasons.push(`Possible match: ${condition.name} — ${condition.note}`);
+  }
+
   const boundedScore = Math.min(100, Math.max(0, score));
 
   return {
     score: boundedScore,
     level: classifyRiskScore(boundedScore),
-    reasons: reasons.length > 0 ? reasons : ["Vitals are within configured MVP thresholds"]
+    reasons: reasons.length > 0 ? reasons : ["Vitals are within configured MVP thresholds"],
+    matchedConditions: matchedConditions.map((c) => c.name)
   };
 }
 

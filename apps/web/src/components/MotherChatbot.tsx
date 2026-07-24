@@ -2,6 +2,7 @@
 
 import { useMemo, useRef, useState } from "react";
 import { HeartPulse, MessageCircle, Send, X } from "lucide-react";
+import { matchConditions } from "@matriwatch/shared";
 
 const API_BASE = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api").replace(/\/$/, "");
 
@@ -20,6 +21,13 @@ const QUICK_PROMPTS = [
 
 function buildReply(input: string): string {
   const text = input.toLowerCase();
+
+  const [topMatch] = matchConditions([input]);
+  if (topMatch) {
+    return topMatch.severity === "urgent"
+      ? `This may be a sign of ${topMatch.name}. ${topMatch.note} Please contact your clinic now or go to the nearest emergency care.`
+      : `This could be related to ${topMatch.name}. ${topMatch.note}`;
+  }
 
   if (/(bleeding|seizure|chest pain|can't breathe|cannot breathe|suicid|harm myself|faint)/.test(text)) {
     return "This could be urgent. Please contact your clinic now or go to the nearest emergency care. If you may hurt yourself, seek immediate local emergency help and tell someone nearby.";

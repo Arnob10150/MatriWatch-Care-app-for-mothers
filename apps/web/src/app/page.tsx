@@ -427,7 +427,7 @@ export default function LandingPage() {
               <div className="grid grid-cols-3 gap-4 max-w-lg mx-auto mb-10">
                 {[
                   { icon: BarChart3, label: "Bangla + Multi-language (Pilot Q3 2026)" },
-                  { icon: Smartphone, label: "Works on ₹3,000 Android phones" },
+                  { icon: Smartphone, label: "Works on 3,000 Android phones" },
                   { icon: ShieldCheck, label: "DGHS & WHO guideline-aligned" },
                 ].map((item) => {
                   const I = item.icon;
