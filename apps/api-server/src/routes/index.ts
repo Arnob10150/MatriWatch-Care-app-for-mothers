@@ -9,11 +9,13 @@ import riskRouter from "./risk";
 import staffRouter from "./staff";
 import clinicsRouter from "./clinics";
 import authRouter from "./auth";
+import chatRouter from "./chat";
 
 const router: IRouter = Router();
 
 router.use(healthRouter);
 router.use(authRouter);
+router.use(chatRouter);
 router.use(mothersRouter);
 router.use(checkinsRouter);
 router.use(alertsRouter);

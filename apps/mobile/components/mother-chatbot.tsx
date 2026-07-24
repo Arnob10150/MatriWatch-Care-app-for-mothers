@@ -12,6 +12,8 @@ import {
 } from "react-native";
 import { HeartPulse, MessageCircle, Send, X } from "lucide-react-native";
 
+const API_BASE = process.env.EXPO_PUBLIC_MATRIWATCH_API_URL?.replace(/\/$/, "") ?? "http://localhost:4000/api";
+
 type ChatMessage = {
   id: number;
   role: "bot" | "mother";
@@ -54,6 +56,7 @@ function buildReply(input: string): string {
 export function MotherChatbot() {
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState("");
+  const [sending, setSending] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: 1,
@@ -63,16 +66,31 @@ export function MotherChatbot() {
   ]);
   const nextId = useRef(2);
 
-  function send(text: string) {
+  async function send(text: string) {
     const trimmed = text.trim();
-    if (!trimmed) return;
+    if (!trimmed || sending) return;
 
-    setMessages((current) => [
-      ...current,
-      { id: nextId.current++, role: "mother", text: trimmed },
-      { id: nextId.current++, role: "bot", text: buildReply(trimmed) },
-    ]);
+    const history = messages.map((m) => ({ role: m.role === "mother" ? "user" : "assistant", text: m.text }));
+    setMessages((current) => [...current, { id: nextId.current++, role: "mother", text: trimmed }]);
     setDraft("");
+    setSending(true);
+
+    let replyText: string;
+    try {
+      const res = await fetch(`${API_BASE}/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: trimmed, history }),
+      });
+      if (!res.ok) throw new Error(`status ${res.status}`);
+      const data = (await res.json()) as { reply: string };
+      replyText = data.reply || buildReply(trimmed);
+    } catch {
+      replyText = buildReply(trimmed);
+    }
+
+    setMessages((current) => [...current, { id: nextId.current++, role: "bot", text: replyText }]);
+    setSending(false);
   }
 
   return (
@@ -134,6 +152,13 @@ export function MotherChatbot() {
                   </Text>
                 </View>
               )}
+              ListFooterComponent={
+                sending ? (
+                  <View className="max-w-[86%] self-start rounded-2xl bg-white px-3.5 py-2.5">
+                    <Text className="text-sm leading-5 text-ink">Typing…</Text>
+                  </View>
+                ) : null
+              }
             />
 
             <View className="border-t border-border bg-white px-4 pb-5 pt-3">
@@ -146,7 +171,8 @@ export function MotherChatbot() {
                 renderItem={({ item }) => (
                   <TouchableOpacity
                     onPress={() => send(item)}
-                    className="rounded-full border border-border bg-surface px-3 py-2"
+                    disabled={sending}
+                    className="rounded-full border border-border bg-surface px-3 py-2 disabled:opacity-50"
                   >
                     <Text className="text-xs font-medium text-primary">{item}</Text>
                   </TouchableOpacity>
@@ -163,7 +189,7 @@ export function MotherChatbot() {
                 />
                 <TouchableOpacity
                   onPress={() => send(draft)}
-                  disabled={!draft.trim()}
+                  disabled={!draft.trim() || sending}
                   className="h-12 w-12 items-center justify-center rounded-xl bg-primary disabled:opacity-50"
                   accessibilityLabel="Send message"
                 >

@@ -3,6 +3,8 @@
 import { useMemo, useRef, useState } from "react";
 import { HeartPulse, MessageCircle, Send, X } from "lucide-react";
 
+const API_BASE = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api").replace(/\/$/, "");
+
 type ChatMessage = {
   id: number;
   role: "bot" | "mother";
@@ -45,6 +47,7 @@ function buildReply(input: string): string {
 export function MotherChatbot() {
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState("");
+  const [sending, setSending] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: 1,
@@ -56,14 +59,33 @@ export function MotherChatbot() {
 
   const title = useMemo(() => (open ? "Care Assistant" : "Open care assistant"), [open]);
 
-  function send(text: string) {
+  async function send(text: string) {
     const trimmed = text.trim();
-    if (!trimmed) return;
+    if (!trimmed || sending) return;
 
+    const history = messages.map((m) => ({ role: m.role === "mother" ? "user" : "assistant", text: m.text }));
     const motherMessage: ChatMessage = { id: nextId.current++, role: "mother", text: trimmed };
-    const botMessage: ChatMessage = { id: nextId.current++, role: "bot", text: buildReply(trimmed) };
-    setMessages((current) => [...current, motherMessage, botMessage]);
+    setMessages((current) => [...current, motherMessage]);
     setDraft("");
+    setSending(true);
+
+    let replyText: string;
+    try {
+      const res = await fetch(`${API_BASE}/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: trimmed, history }),
+      });
+      if (!res.ok) throw new Error(`status ${res.status}`);
+      const data = (await res.json()) as { reply: string };
+      replyText = data.reply || buildReply(trimmed);
+    } catch {
+      replyText = buildReply(trimmed);
+    }
+
+    const botMessage: ChatMessage = { id: nextId.current++, role: "bot", text: replyText };
+    setMessages((current) => [...current, botMessage]);
+    setSending(false);
   }
 
   return (
@@ -108,6 +130,14 @@ export function MotherChatbot() {
                 {message.text}
               </div>
             ))}
+            {sending && (
+              <div
+                className="mr-auto max-w-[86%] rounded-2xl px-3.5 py-2.5 text-sm leading-5 text-[#2D2D2D]"
+                style={{ backgroundColor: "#FFFFFF", boxShadow: "0 1px 4px rgba(201,124,138,0.08)" }}
+              >
+                Typing…
+              </div>
+            )}
           </div>
 
           <div className="border-t bg-white px-3 py-3" style={{ borderColor: "#EDE8E3" }}>
@@ -116,8 +146,9 @@ export function MotherChatbot() {
                 <button
                   key={prompt}
                   type="button"
-                  onClick={() => send(prompt)}
-                  className="shrink-0 rounded-full border px-3 py-1.5 text-xs font-medium"
+  onClick={() => send(prompt)}
+                  disabled={sending}
+                  className="shrink-0 rounded-full border px-3 py-1.5 text-xs font-medium disabled:opacity-50"
                   style={{ borderColor: "#EDE8E3", color: "#C97C8A", backgroundColor: "#FFF8F0" }}
                 >
                   {prompt}
@@ -143,7 +174,7 @@ export function MotherChatbot() {
                 type="submit"
                 className="flex h-11 w-11 items-center justify-center rounded-xl text-white disabled:opacity-50"
                 style={{ backgroundColor: "#C97C8A" }}
-                disabled={!draft.trim()}
+                disabled={!draft.trim() || sending}
                 aria-label="Send message"
               >
                 <Send className="h-4 w-4" />
