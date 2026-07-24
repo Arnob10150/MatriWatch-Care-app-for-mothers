@@ -29,12 +29,12 @@ async function seed() {
         bodyTemp: 36.9,
         heartRate: 82,
         symptoms: data.name === "Shirin Sultana" ? ["swelling", "headache"] : [],
-        riskScore: data.name === "Shirin Sultana" ? 0.88 : 0.12,
-        riskLevel: data.name === "Shirin Sultana" ? "high" : "low",
+        riskScore: data.name === "Shirin Sultana" ? 88 : 12,
+        riskLevel: data.name === "Shirin Sultana" ? "High" : "Low",
       })
       .returning();
 
-    if (checkin.riskLevel === "high") {
+    if (checkin.riskLevel === "High") {
       await db.insert(alertsTable).values({
         motherId: mother.id,
         clinicId: clinic.id,

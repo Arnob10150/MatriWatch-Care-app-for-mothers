@@ -11,6 +11,19 @@ import { logger } from "../lib/logger";
 
 const router: IRouter = Router();
 
+type ApiRiskLevel = "low" | "mid" | "high";
+
+function toApiRiskLevel(level: string | null | undefined): ApiRiskLevel | null {
+  const normalized = level?.toLowerCase();
+  if (normalized === "high" || normalized === "mid" || normalized === "low") return normalized;
+  return null;
+}
+
+function toApiRiskScore(score: number | null | undefined): number | null {
+  if (score == null) return null;
+  return score > 1 ? score / 100 : score;
+}
+
 router.get("/mothers", async (req, res): Promise<void> => {
   try {
     const { clinic_id, risk_level } = req.query as { clinic_id?: string; risk_level?: string };
@@ -47,7 +60,7 @@ router.get("/mothers", async (req, res): Promise<void> => {
 
         return {
           ...m,
-          current_risk_level: latest?.risk_level ?? null,
+          current_risk_level: toApiRiskLevel(latest?.risk_level),
           last_checkin_at: latest?.created_at ?? null,
         };
       })
@@ -55,7 +68,7 @@ router.get("/mothers", async (req, res): Promise<void> => {
 
     let result = enriched;
     if (clinic_id) result = result.filter((m) => m.clinic_id === clinic_id);
-    if (risk_level) result = result.filter((m) => m.current_risk_level === risk_level);
+    if (risk_level) result = result.filter((m) => m.current_risk_level === toApiRiskLevel(risk_level));
 
     res.json(result);
   } catch (err) {
@@ -136,7 +149,7 @@ router.get("/mothers/:id", async (req, res): Promise<void> => {
 
     res.json({
       ...row,
-      current_risk_level: latest?.risk_level ?? null,
+      current_risk_level: toApiRiskLevel(latest?.risk_level),
       last_checkin_at: latest?.created_at ?? null,
       recent_checkins: recentCheckins.map((c) => ({
         id: c.id,
@@ -149,8 +162,8 @@ router.get("/mothers/:id", async (req, res): Promise<void> => {
         heart_rate: c.heartRate,
         symptoms: c.symptoms ?? [],
         notes: c.notes,
-        risk_score: c.riskScore,
-        risk_level: c.riskLevel,
+        risk_score: toApiRiskScore(c.riskScore),
+        risk_level: toApiRiskLevel(c.riskLevel),
         created_at: c.createdAt,
       })),
       epds_responses: [],

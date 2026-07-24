@@ -2,6 +2,7 @@ import { sendServerError } from "../lib/http-errors";
 import { Router, type IRouter } from "express";
 import { db } from "@workspace/db";
 import {
+  pool,
   checkinsTable,
   mothersTable,
   alertsTable,
@@ -10,6 +11,47 @@ import { eq, desc } from "drizzle-orm";
 import { calculateRisk } from "../lib/risk";
 
 const router: IRouter = Router();
+
+type ApiRiskLevel = "low" | "mid" | "high";
+type DbRiskLevel = "Low" | "Mid" | "High";
+
+let riskEnumLabels: Set<string> | null = null;
+
+async function getRiskEnumLabels(): Promise<Set<string>> {
+  if (riskEnumLabels) return riskEnumLabels;
+
+  const result = await pool.query<{ enumlabel: string }>(
+    "select e.enumlabel from pg_enum e join pg_type t on t.oid = e.enumtypid where t.typname = 'risk_level'",
+  );
+  riskEnumLabels = new Set(result.rows.map((row) => row.enumlabel));
+  return riskEnumLabels;
+}
+
+function toSupabaseRiskLevel(level: ApiRiskLevel): DbRiskLevel {
+  if (level === "high") return "High";
+  if (level === "mid") return "Mid";
+  return "Low";
+}
+
+async function toDbRiskLevel(level: ApiRiskLevel): Promise<string> {
+  const labels = await getRiskEnumLabels();
+  const supabaseValue = toSupabaseRiskLevel(level);
+
+  if (labels.has(supabaseValue)) return supabaseValue;
+  if (labels.has(level)) return level;
+  return supabaseValue;
+}
+
+function toApiRiskLevel(level: string | null | undefined): ApiRiskLevel | null {
+  const normalized = level?.toLowerCase();
+  if (normalized === "high" || normalized === "mid" || normalized === "low") return normalized;
+  return null;
+}
+
+function toApiRiskScore(score: number | null | undefined): number | null {
+  if (score == null) return null;
+  return score > 1 ? score / 100 : score;
+}
 
 router.get("/checkins", async (req, res): Promise<void> => {
   try {
@@ -44,7 +86,12 @@ router.get("/checkins", async (req, res): Promise<void> => {
     }
 
     const rows = await query;
-    res.json(rows.map((r) => ({ ...r, symptoms: r.symptoms ?? [] })));
+    res.json(rows.map((r) => ({
+      ...r,
+      symptoms: r.symptoms ?? [],
+      risk_score: toApiRiskScore(r.risk_score),
+      risk_level: toApiRiskLevel(r.risk_level),
+    })));
   } catch (err) {
     req.log.error({ err }, "Failed to list checkins");
     sendServerError(res, err);
@@ -77,7 +124,7 @@ router.post("/checkins", async (req, res): Promise<void> => {
       .limit(1);
 
     // Calculate risk
-    let riskLevel: "low" | "mid" | "high" = "low";
+    let riskLevel: ApiRiskLevel = "low";
     let riskScore = 0.1;
     const triggeredBy: string[] = [];
 
@@ -105,21 +152,21 @@ router.post("/checkins", async (req, res): Promise<void> => {
         heartRate: heart_rate ?? null,
         symptoms: symptoms ?? [],
         notes: notes ?? null,
-        riskScore,
-        riskLevel,
+        riskScore: Math.round(riskScore * 100),
+        riskLevel: (await toDbRiskLevel(riskLevel)) as never,
       })
       .returning();
 
     // If high risk, insert alert
-    if (riskLevel === "high" && mother) {
+    if (riskLevel === "high" && mother?.clinicId) {
       const triggerDesc = triggeredBy
         .map((t) => t.replace(/_/g, " "))
         .join(", ");
       await db.insert(alertsTable).values({
         motherId: mother_id,
-        clinicId: mother.clinicId!,
-        alertType: "high_risk_vitals",
-        message: `High risk vitals detected for ${mother.name}: ${triggerDesc}`,
+        clinicId: mother.clinicId,
+        alertType: "maternal_risk",
+        message: `High risk vitals detected for ${mother.name}: ${triggerDesc || "risk threshold crossed"}`,
         isRead: false,
       });
     }
@@ -135,8 +182,8 @@ router.post("/checkins", async (req, res): Promise<void> => {
       heart_rate: checkin.heartRate,
       symptoms: checkin.symptoms ?? [],
       notes: checkin.notes,
-      risk_score: checkin.riskScore,
-      risk_level: checkin.riskLevel,
+      risk_score: toApiRiskScore(checkin.riskScore),
+      risk_level: toApiRiskLevel(checkin.riskLevel),
       created_at: checkin.createdAt,
     });
   } catch (err) {
@@ -174,7 +221,12 @@ router.get("/checkins/:id", async (req, res): Promise<void> => {
       return;
     }
 
-    res.json({ ...row, symptoms: row.symptoms ?? [] });
+    res.json({
+      ...row,
+      symptoms: row.symptoms ?? [],
+      risk_score: toApiRiskScore(row.risk_score),
+      risk_level: toApiRiskLevel(row.risk_level),
+    });
   } catch (err) {
     req.log.error({ err }, "Failed to get checkin");
     sendServerError(res, err);

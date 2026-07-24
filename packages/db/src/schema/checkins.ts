@@ -3,7 +3,7 @@ import { z } from "zod";
 import { insertSchemaFor } from "./_insert-schema";
 import { mothersTable } from "./mothers";
 
-export const riskLevelEnum = pgEnum("risk_level", ["low", "mid", "high"]);
+export const riskLevelEnum = pgEnum("risk_level", ["Low", "Mid", "High"]);
 
 export const checkinsTable = pgTable("checkins", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -15,7 +15,7 @@ export const checkinsTable = pgTable("checkins", {
   heartRate: integer("heart_rate"),
   symptoms: text("symptoms").array(),
   notes: text("notes"),
-  riskScore: real("risk_score"),
+  riskScore: integer("risk_score"),
   riskLevel: riskLevelEnum("risk_level"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });

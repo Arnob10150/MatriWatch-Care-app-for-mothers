@@ -10,6 +10,12 @@ import { eq, desc, gte, sql } from "drizzle-orm";
 
 const router: IRouter = Router();
 
+function toRiskBucket(level: string | null | undefined): "low" | "mid" | "high" | "none" {
+  const normalized = level?.toLowerCase();
+  if (normalized === "high" || normalized === "mid" || normalized === "low") return normalized;
+  return "none";
+}
+
 router.get("/dashboard/stats", async (req, res): Promise<void> => {
   try {
     const today = new Date();
@@ -45,8 +51,7 @@ router.get("/dashboard/stats", async (req, res): Promise<void> => {
           .where(eq(checkinsTable.motherId, m.id))
           .orderBy(desc(checkinsTable.createdAt))
           .limit(1);
-        const level = latest?.risk_level ?? "none";
-        riskCounts[level as keyof typeof riskCounts]++;
+        riskCounts[toRiskBucket(latest?.risk_level)]++;
       })
     );
 
