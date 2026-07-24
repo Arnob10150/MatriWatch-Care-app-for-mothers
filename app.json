@@ -1,0 +1,30 @@
+{
+  "expo": {
+    "name": "MatriWatch",
+    "slug": "matriwatch",
+    "scheme": "matriwatch",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "platforms": [
+      "android",
+      "ios"
+    ],
+    "plugins": [
+      "./apps/mobile/node_modules/expo-router/app.plugin.js",
+      "expo-notifications"
+    ],
+    "extra": {
+      "router": {
+        "root": "apps/mobile/app"
+      },
+      "eas": {
+        "projectId": "fedc2b96-f0ca-405a-9f3b-4879c954dd80"
+      }
+    },
+    "owner": "shamiul22",
+    "android": {
+      "package": "com.matriwatch"
+    }
+  }
+}

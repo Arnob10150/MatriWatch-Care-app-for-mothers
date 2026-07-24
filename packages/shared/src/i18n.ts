@@ -49,6 +49,7 @@ export const translations: Record<Locale, Record<string, string>> = {
     "login.missingFields": "Please enter your email and password.",
     "login.invalidCredentials": "Invalid email or password.",
     "login.serverUnreachable": "Could not reach the server. Make sure the API is running.",
+    "login.backToHome": "Back to home",
 
     // Register
     "register.title": "Create Account",
@@ -74,6 +75,9 @@ export const translations: Record<Locale, Record<string, string>> = {
     "register.passwordTooShort": "Password must be at least 6 characters.",
     "register.passwordMismatchError": "Passwords do not match.",
     "register.ageRequired": "Please enter your age.",
+    "register.clinic": "Clinic",
+    "register.clinicRequired": "Please select a clinic.",
+    "register.noClinics": "No clinics available",
     "register.failed": "Registration failed. Please try again.",
     "register.serverUnreachable": "Could not reach the server. Make sure the API is running.",
     "register.success.title": "Account Created!",
@@ -302,6 +306,7 @@ export const translations: Record<Locale, Record<string, string>> = {
     "login.missingFields": "অনুগ্রহ করে আপনার ইমেইল এবং পাসওয়ার্ড লিখুন।",
     "login.invalidCredentials": "ভুল ইমেইল বা পাসওয়ার্ড।",
     "login.serverUnreachable": "সার্ভারে পৌঁছানো যায়নি। API চালু আছে কিনা নিশ্চিত করুন।",
+    "login.backToHome": "হোমে ফিরে যান",
 
     // Register
     "register.title": "অ্যাকাউন্ট তৈরি করুন",
@@ -327,6 +332,9 @@ export const translations: Record<Locale, Record<string, string>> = {
     "register.passwordTooShort": "পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে।",
     "register.passwordMismatchError": "পাসওয়ার্ড মিলছে না।",
     "register.ageRequired": "অনুগ্রহ করে আপনার বয়স লিখুন।",
+    "register.clinic": "ক্লিনিক",
+    "register.clinicRequired": "অনুগ্রহ করে একটি ক্লিনিক নির্বাচন করুন।",
+    "register.noClinics": "কোনো ক্লিনিক উপলব্ধ নেই",
     "register.failed": "নিবন্ধন ব্যর্থ হয়েছে। আবার চেষ্টা করুন।",
     "register.serverUnreachable": "সার্ভারে পৌঁছানো যায়নি। API চালু আছে কিনা নিশ্চিত করুন।",
     "register.success.title": "অ্যাকাউন্ট তৈরি হয়েছে!",

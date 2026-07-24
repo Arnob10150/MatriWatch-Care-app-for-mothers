@@ -1,7 +1,7 @@
 import { sendServerError } from "../lib/http-errors";
 import { Router, type IRouter } from "express";
 import { db } from "@workspace/db";
-import { epdsResponsesTable } from "@workspace/db";
+import { epdsResponsesTable, mothersTable, alertsTable } from "@workspace/db";
 import { eq, desc } from "drizzle-orm";
 
 const router: IRouter = Router();
@@ -14,15 +14,35 @@ router.post("/epds", async (req, res): Promise<void> => {
       return;
     }
 
+    const flagged = ppd_flagged ?? total_score > 12;
+
     const [record] = await db
       .insert(epdsResponsesTable)
       .values({
         motherId: mother_id,
         responses,
         totalScore: total_score,
-        ppdFlagged: ppd_flagged ?? total_score > 12,
+        ppdFlagged: flagged,
       })
       .returning();
+
+    if (flagged) {
+      const [mother] = await db
+        .select()
+        .from(mothersTable)
+        .where(eq(mothersTable.id, mother_id))
+        .limit(1);
+
+      if (mother?.clinicId) {
+        await db.insert(alertsTable).values({
+          motherId: mother_id,
+          clinicId: mother.clinicId,
+          alertType: "ppd",
+          message: `${mother.name}'s mood check flagged possible postpartum depression (EPDS score ${total_score}/30)`,
+          isRead: false,
+        });
+      }
+    }
 
     res.status(201).json({
       id: record.id,

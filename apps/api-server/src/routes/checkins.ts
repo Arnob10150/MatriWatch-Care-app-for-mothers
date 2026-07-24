@@ -152,7 +152,7 @@ router.post("/checkins", async (req, res): Promise<void> => {
         heartRate: heart_rate ?? null,
         symptoms: symptoms ?? [],
         notes: notes ?? null,
-        riskScore: Math.round(riskScore * 100),
+        riskScore: Math.max(0, Math.min(100, Math.round(riskScore * 100))),
         riskLevel: (await toDbRiskLevel(riskLevel)) as never,
       })
       .returning();

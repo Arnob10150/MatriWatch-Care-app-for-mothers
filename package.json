@@ -2,6 +2,7 @@
   "name": "matriwatch",
   "version": "0.1.0",
   "private": true,
+  "main": "./apps/mobile/node_modules/expo-router/entry",
   "description": "AI-powered maternal health monitoring platform for mothers and clinics.",
   "workspaces": [
     "apps/web",

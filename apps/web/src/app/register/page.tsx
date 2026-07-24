@@ -1,27 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Heart, ShieldCheck, Stethoscope, Users, CheckCircle2, AlertCircle, Eye, EyeOff } from "lucide-react";
+import { Heart, Stethoscope, Users, CheckCircle2, AlertCircle, Eye, EyeOff } from "lucide-react";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { useLanguage } from "@/components/LanguageProvider";
 
 const API_BASE = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api").replace(/\/$/, "");
 
 const ROLES = [
-  {
-    id: "Admin" as const,
-    label: "Admin",
-    description: "Clinic administrator",
-    icon: ShieldCheck,
-    iconColor: "#7A5A92",
-    iconBg: "#F3ECF9",
-    activeBorder: "#7A5A92",
-    activeBg: "#F3ECF9",
-    buttonColor: "#7A5A92",
-    redirect: "/admin",
-  },
   {
     id: "Doctor" as const,
     label: "Doctor",
@@ -75,11 +63,23 @@ export default function RegisterPage() {
   const [age, setAge] = useState("");
   const [gestationalAge, setGestationalAge] = useState("");
   const [dueDate, setDueDate] = useState("");
+  const [clinics, setClinics] = useState<{ id: string; name: string; location: string }[]>([]);
+  const [clinicId, setClinicId] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
   const selectedRole = ROLES.find((r) => r.id === role)!;
+
+  useEffect(() => {
+    fetch(`${API_BASE}/clinics`)
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data: { id: string; name: string; location: string }[]) => {
+        setClinics(data);
+        if (data.length > 0) setClinicId((current) => current || data[0].id);
+      })
+      .catch(() => {});
+  }, []);
 
   const inputStyle = {
     borderColor: "#EDE8E3",
@@ -107,6 +107,10 @@ export default function RegisterPage() {
       setError(t("register.ageRequired"));
       return;
     }
+    if (!clinicId) {
+      setError(t("register.clinicRequired"));
+      return;
+    }
 
     setLoading(true);
     try {
@@ -115,6 +119,7 @@ export default function RegisterPage() {
         email: email.trim(),
         password,
         role,
+        clinic_id: clinicId,
       };
       if (role === "Mother") {
         body.age = Number(age);
@@ -179,9 +184,9 @@ export default function RegisterPage() {
 
           {/* Logo */}
           <div className="mb-7 flex flex-col items-center">
-            <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl" style={{ backgroundColor: "#FCE8EE" }}>
+            <Link href="/" className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl transition-transform active:scale-95" style={{ backgroundColor: "#FCE8EE" }} aria-label={t("login.backToHome")}>
               <Heart className="h-7 w-7" style={{ color: "#C97C8A", fill: "#C97C8A" }} />
-            </div>
+            </Link>
             <h1 className="text-2xl font-bold" style={{ color: "#C97C8A" }}>{t("register.title")}</h1>
             <p className="mt-1 text-sm" style={{ color: "#7A7A8A" }}>{t("register.subtitle")}</p>
           </div>
@@ -189,7 +194,7 @@ export default function RegisterPage() {
           {/* Role selector */}
           <div className="mb-5">
             <p className="mb-2.5 text-xs font-medium" style={{ color: "#2D2D2D" }}>{t("register.role")}</p>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-3 gap-2">
               {ROLES.map((r) => {
                 const Icon = r.icon;
                 const active = role === r.id;
@@ -235,6 +240,24 @@ export default function RegisterPage() {
                 onFocus={(e) => (e.target.style.borderColor = "#F9B8C4")}
                 onBlur={(e) => (e.target.style.borderColor = "#EDE8E3")}
               />
+            </div>
+
+            {/* Clinic */}
+            <div>
+              <label className="mb-1.5 block text-xs font-medium" style={{ color: "#2D2D2D" }}>{t("register.clinic")}</label>
+              <select
+                value={clinicId}
+                onChange={(e) => setClinicId(e.target.value)}
+                className="w-full rounded-xl border px-3.5 py-2.5 text-sm outline-none transition-all"
+                style={inputStyle}
+              >
+                {clinics.length === 0 && <option value="">{t("register.noClinics")}</option>}
+                {clinics.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name} — {c.location}
+                  </option>
+                ))}
+              </select>
             </div>
 
             {/* Email */}

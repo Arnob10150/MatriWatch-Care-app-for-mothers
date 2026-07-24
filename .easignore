@@ -1,0 +1,5 @@
+.temp/
+node_modules/
+apps/*/node_modules/
+apps/web/.next/
+.vercel/

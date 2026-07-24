@@ -29,7 +29,7 @@ router.post("/auth/register", async (req, res): Promise<void> => {
       name: string;
       email: string;
       password: string;
-      role: "Admin" | "Doctor" | "Nurse" | "Mother";
+      role: "Doctor" | "Nurse" | "Mother";
       age?: number;
       gestational_age?: number;
       due_date?: string;
@@ -45,7 +45,7 @@ router.post("/auth/register", async (req, res): Promise<void> => {
       return;
     }
 
-    const validRoles = ["Admin", "Doctor", "Nurse", "Mother"];
+    const validRoles = ["Doctor", "Nurse", "Mother"];
     if (!validRoles.includes(role)) {
       res.status(400).json({ error: `role must be one of: ${validRoles.join(", ")}` });
       return;
@@ -57,7 +57,7 @@ router.post("/auth/register", async (req, res): Promise<void> => {
       return;
     }
 
-    const dbRole = role === "Admin" ? "admin" : role === "Mother" ? "mother" : "clinic_staff";
+    const dbRole = role === "Mother" ? "mother" : "clinic_staff";
     const passwordHash = createPasswordHash(password);
 
     const [user] = await db

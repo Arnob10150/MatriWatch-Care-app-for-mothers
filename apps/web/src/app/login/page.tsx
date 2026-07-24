@@ -131,15 +131,14 @@ export default function LoginPage() {
         >
           {/* Logo */}
           <div className="mb-7 flex flex-col items-center">
-            <div
-              className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl"
-              style={{ backgroundColor: "#FCE8EE" }}
-            >
+            <Link href="/" className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl transition-transform active:scale-95" style={{ backgroundColor: "#FCE8EE" }} aria-label={t("login.backToHome")}>
               <Heart className="h-7 w-7" style={{ color: "#C97C8A", fill: "#C97C8A" }} />
-            </div>
-            <h1 className="text-2xl font-bold" style={{ color: "#C97C8A" }}>
-              {t("layout.appName")}
-            </h1>
+            </Link>
+            <Link href="/">
+              <h1 className="text-2xl font-bold" style={{ color: "#C97C8A" }}>
+                {t("layout.appName")}
+              </h1>
+            </Link>
             <p className="mt-1 text-sm" style={{ color: "#7A7A8A" }}>
               {t("login.tagline")}
             </p>

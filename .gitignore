@@ -6,6 +6,7 @@ build/
 coverage/
 .turbo/
 .vercel/
+.temp/
 *.tsbuildinfo
 .replit-artifact/
 Motherly-Migration.zip
